@@ -60,6 +60,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function () {
     Route::get('/dashboard', [PetugasDashboardController::class, 'index'])->name('dashboard');
     
+    Route::get('/jalan/get-koordinat', [JalanPController::class, 'getKoordinatFromAlamat'])->name('petugas.jalan.getKoordinat');
     // Prefix 'jalan' untuk URL, dan Name 'jalan.' untuk route
     Route::prefix('jalan')->name('jalan.')->group(function () {
         // Cukup tulis seperti ini, otomatis jadi petugas.jalan.index, petugas.jalan.create, dst.

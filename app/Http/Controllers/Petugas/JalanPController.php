@@ -47,7 +47,20 @@ class JalanPController extends Controller
      */
     public function create()
     {
-        return view('petugas.jalan.create');
+        // Generate kode jalan otomatis
+        $lastJalan = Jalan::withTrashed()->orderBy('id', 'desc')->first();
+        
+        if ($lastJalan && $lastJalan->kode) {
+            // Ambil angka dari kode (format: JL-001)
+            $lastNumber = intval(substr($lastJalan->kode, 3));
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+        
+        $kodeOtomatis = 'JL-' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        
+        return view('petugas.jalan.create', compact('kodeOtomatis'));
     }
 
     /**
@@ -71,8 +84,10 @@ class JalanPController extends Controller
             'lokasi.required' => 'Lokasi jalan wajib diisi',
             'panjang.required' => 'Panjang jalan wajib diisi',
             'panjang.numeric' => 'Panjang jalan harus berupa angka',
-            'latitude.between' => 'Latitude tidak valid',
-            'longitude.between' => 'Longitude tidak valid',
+            'latitude.numeric' => 'Latitude harus berupa angka',
+            'longitude.numeric' => 'Longitude harus berupa angka',
+            'latitude.between' => 'Latitude tidak valid (range -90 s/d 90)',
+            'longitude.between' => 'Longitude tidak valid (range -180 s/d 180)',
         ]);
         
         if ($validator->fails()) {
@@ -87,8 +102,8 @@ class JalanPController extends Controller
             'lokasi' => ucwords($request->lokasi),
             'panjang' => $request->panjang,
             'deskripsi' => $request->deskripsi,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
+            'latitude' => $request->latitude ? floatval($request->latitude) : null,
+            'longitude' => $request->longitude ? floatval($request->longitude) : null,
             'is_active' => $request->has('is_active'),
             'created_by' => Auth::id(),
         ]);
@@ -145,8 +160,8 @@ class JalanPController extends Controller
             'lokasi' => ucwords($request->lokasi),
             'panjang' => $request->panjang,
             'deskripsi' => $request->deskripsi,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
+            'latitude' => $request->latitude ? floatval($request->latitude) : null,
+            'longitude' => $request->longitude ? floatval($request->longitude) : null,
             'is_active' => $request->has('is_active'),
             'updated_by' => Auth::id(),
         ]);
@@ -173,4 +188,57 @@ class JalanPController extends Controller
         return redirect()->route('petugas.jalan.index')
             ->with('success', 'Data jalan berhasil dihapus!');
     }
+    
+    /**
+     * Check if kode already exists (for AJAX)
+     */
+    public function cekKode(Request $request)
+    {
+        $kode = $request->get('kode');
+        $exists = Jalan::where('kode', $kode)->exists();
+        
+        return response()->json(['exists' => $exists]);
+    }
+    
+    /**
+     * Get coordinates from address (optional - for future use)
+     */
+    public function getKoordinatFromAlamat(Request $request)
+{
+    $alamat = $request->get('alamat');
+    
+    if (!$alamat) {
+        return response()->json(['error' => 'Alamat tidak boleh kosong'], 400);
+    }
+    
+    // Gunakan Nominatim (OpenStreetMap) - gratis, tanpa API key
+    $url = 'https://nominatim.openstreetmap.org/search?q=' . urlencode($alamat) . '&format=json&limit=1';
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200 && $response) {
+        $data = json_decode($response, true);
+        
+        if (!empty($data)) {
+            return response()->json([
+                'success' => true,
+                'latitude' => $data[0]['lat'],
+                'longitude' => $data[0]['lon'],
+                'display_name' => $data[0]['display_name']
+            ]);
+        }
+    }
+    
+    return response()->json([
+        'success' => false,
+        'message' => 'Alamat tidak ditemukan. Coba dengan alamat yang lebih spesifik.'
+    ]);
+}
 }

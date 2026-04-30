@@ -69,12 +69,6 @@
                         <div class="nav-text">Daftar Jalan</div>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <div class="nav-icon"><i class="fas fa-plus-circle"></i></div>
-                        <div class="nav-text">Tambah Jalan</div>
-                    </a>
-                </li>
             </ul>
         </div>
         
