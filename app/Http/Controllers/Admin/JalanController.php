@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\JalanExport;
 use App\Http\Controllers\Controller;
 use App\Models\Jalan;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -244,38 +246,50 @@ class JalanController extends Controller
      */
     public function export(Request $request)
     {
-        $query = Jalan::query();
+        $search = $request->get('search');
+        $status = $request->get('status');
         
-        if ($request->has('search')) {
-            $query->where('nama', 'like', '%' . $request->search . '%');
-        }
+        $filename = 'Data_Jalan_' . date('Y-m-d_His') . '.xlsx';
         
-        $jalan = $query->get();
-        
-        // Logika export (bisa pakai Laravel Excel atau manual CSV)
-        $filename = 'data_jalan_' . date('Y-m-d') . '.csv';
-        
-        $handle = fopen('php://temp', 'w+');
-        fputcsv($handle, ['Kode', 'Nama Jalan', 'Lokasi', 'Panjang (m)', 'Status', 'Dibuat Pada']);
-        
-        foreach ($jalan as $j) {
-            fputcsv($handle, [
-                $j->kode,
-                $j->nama,
-                $j->lokasi,
-                $j->panjang,
-                $j->is_active ? 'Aktif' : 'Nonaktif',
-                $j->created_at->format('d/m/Y')
-            ]);
-        }
-        
-        rewind($handle);
-        $csvContent = stream_get_contents($handle);
-        fclose($handle);
-        
-        return response($csvContent, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return Excel::download(new JalanExport($search, $status), $filename);
     }
+    
+    /**
+     * Export ke CSV (opsional)
+     */
+    public function exportCsv(Request $request)
+    {
+        $search = $request->get('search');
+        $status = $request->get('status');
+        
+        $filename = 'Data_Jalan_' . date('Y-m-d_His') . '.csv';
+        
+        return Excel::download(new JalanExport($search, $status), $filename, \Maatwebsite\Excel\Excel::CSV);
+    }
+    public function exportPdf(Request $request)
+{
+    // Query data (sama seperti di atas)
+    $query = Jalan::with('createdBy');
+    
+    if ($request->has('search') && $request->search != '') {
+        $search = $request->search;
+        $query->where('nama', 'like', "%{$search}%");
+    }
+    
+    $jalan = $query->orderBy('created_at', 'desc')->get();
+    
+    $data = [
+        'jalan' => $jalan,
+        'title' => 'Data Jalan',
+        'date' => date('d/m/Y H:i:s'),
+        'total' => $jalan->count(),
+        'user' => Auth::user()->name ?? 'Sistem'
+    ];
+    
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.jalan-pdf', $data);
+    $pdf->setPaper('A4', 'landscape');
+    
+    return $pdf->download('Data_Jalan_' . date('Y-m-d_His') . '.pdf');
+}
+    
 }

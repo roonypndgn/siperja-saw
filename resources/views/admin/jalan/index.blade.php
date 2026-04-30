@@ -10,11 +10,31 @@
         <a href="{{ route('admin.jalan.create') }}" class="btn-primary">
             <i class="fas fa-plus"></i> Tambah Jalan Baru
         </a>
-        <a href="{{ route('admin.jalan.export') }}" class="btn-secondary">
-            <i class="fas fa-download"></i> Export CSV
-        </a>
+        
+        <!-- Dropdown Export -->
+        <div class="dropdown" style="position: relative;">
+            <button class="btn-secondary dropdown-toggle" type="button" id="exportDropdown" onclick="toggleDropdown()">
+                <i class="fas fa-download"></i> Export Data
+                <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 12px;"></i>
+            </button>
+            <div class="dropdown-menu" id="exportDropdownMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 180px; z-index: 1000;">
+                <a class="dropdown-item" href="{{ route('admin.jalan.export.excel', request()->query()) }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; text-decoration: none; color: var(--text-dark); transition: var(--transition);">
+                    <i class="fas fa-file-excel" style="color: #10B981; font-size: 16px;"></i>
+                    <span>Excel (.xlsx)</span>
+                </a>
+                <a class="dropdown-item" href="{{ route('admin.jalan.export.csv', request()->query()) }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; text-decoration: none; color: var(--text-dark); transition: var(--transition);">
+                    <i class="fas fa-file-csv" style="color: #F59E0B; font-size: 16px;"></i>
+                    <span>CSV</span>
+                </a>
+                <a class="dropdown-item" href="{{ route('admin.jalan.export.pdf', request()->query()) }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; text-decoration: none; color: var(--text-dark); transition: var(--transition);">
+                    <i class="fas fa-file-pdf" style="color: #EF4444; font-size: 16px;"></i>
+                    <span>PDF</span>
+                </a>
+            </div>
+        </div>
     </div>
     
+    <!-- Form Filter -->
     <form method="GET" action="{{ route('admin.jalan.index') }}" style="display: flex; gap: 12px; flex-wrap: wrap;">
         <div class="search-box" style="position: relative;">
             <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-lighter);"></i>
@@ -90,7 +110,7 @@
                     <small>
                         {{ $item->created_at->format('d/m/Y') }}
                         <br>
-                        <span style="color: var(--text-lighter); font-size: 10px;">{{ $item->created_at->format('H:i') }}</span>
+                        <span style="color: var(--text-lighter); font-size: 10px;">{{ $item->created_at->timezone('Asia/Jakarta')->format('H:i') }}</span>
                     </small>
                 </td>
                 <td class="action-buttons">
@@ -585,6 +605,37 @@
             deleteId = null;
             toggleId = null;
         }
+    });
+    // Fungsi toggle dropdown
+    function toggleDropdown() {
+        const menu = document.getElementById('exportDropdownMenu');
+        if (menu.style.display === 'none' || menu.style.display === '') {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    }
+    
+    // Tutup dropdown jika klik di luar
+    document.addEventListener('click', function(event) {
+        const dropdown = document.querySelector('.dropdown');
+        const menu = document.getElementById('exportDropdownMenu');
+        
+        if (dropdown && !dropdown.contains(event.target)) {
+            if (menu) {
+                menu.style.display = 'none';
+            }
+        }
+    });
+    
+    // Hover effect untuk dropdown items
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'var(--bg-light)';
+        });
+        item.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = 'white';
+        });
     });
 </script>
 @endpush

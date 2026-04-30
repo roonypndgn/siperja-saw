@@ -44,7 +44,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::post('{id}/restore', [JalanController::class, 'restore'])->name('restore');
         Route::delete('{id}/force-delete', [JalanController::class, 'forceDelete'])->name('force-delete');
         Route::patch('{id}/toggle-status', [JalanController::class, 'toggleStatus'])->name('toggle-status');
-        Route::get('export/csv', [JalanController::class, 'export'])->name('export');
+        Route::get('export/excel', [JalanController::class, 'export'])->name('export.excel');
+        Route::get('export/csv', [JalanController::class, 'exportCsv'])->name('export.csv');
+        Route::get('export/pdf', [JalanController::class, 'exportPdf'])->name('export.pdf');
 });
 });
 
