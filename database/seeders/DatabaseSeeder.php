@@ -2,24 +2,44 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\User;
+use App\Models\Kriteria;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Buat user admin
+        User::create([
+            'name' => 'Administrator',
+            'email' => 'admin@mail.com',
+            'nip' => '198001012010011001',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
         ]);
+
+        // Buat user petugas
+        User::create([
+            'name' => 'Petugas Lapangan',
+            'email' => 'petugas@mail.com',
+            'nip' => '198501012011012002',
+            'password' => Hash::make('password'),
+            'role' => 'petugas',
+        ]);
+
+        // Buat kriteria standar
+        $kriteria = [
+            ['kode' => 'C1', 'nama' => 'Tingkat Kerusakan', 'tipe' => 'benefit', 'bobot' => 0.30, 'satuan' => '%', 'urutan' => 1],
+            ['kode' => 'C2', 'nama' => 'Volume Kendaraan', 'tipe' => 'benefit', 'bobot' => 0.25, 'satuan' => 'kendaraan/hari', 'urutan' => 2],
+            ['kode' => 'C3', 'nama' => 'Panjang Jalan Rusak', 'tipe' => 'benefit', 'bobot' => 0.20, 'satuan' => 'meter', 'urutan' => 3],
+            ['kode' => 'C4', 'nama' => 'Akses Penting', 'tipe' => 'benefit', 'bobot' => 0.15, 'satuan' => 'skala 1-100', 'urutan' => 4],
+            ['kode' => 'C5', 'nama' => 'Biaya Perbaikan', 'tipe' => 'cost', 'bobot' => 0.10, 'satuan' => 'juta rupiah', 'urutan' => 5],
+        ];
+
+        foreach ($kriteria as $k) {
+            Kriteria::create($k);
+        }
     }
 }
