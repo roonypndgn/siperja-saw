@@ -25,11 +25,12 @@
     <div class="user-card">
         <div class="user-avatar">
             <div class="avatar-img">
+                {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
             </div>
             <div class="user-details">
-                <div class="user-name"></div>
+                <div class="user-name">{{ Auth::user()->name ?? 'Administrator' }}</div>
                 <div class="user-role">
-                    <i class="fas fa-shield-alt" style="font-size: 10px;"></i> 
+                    <i class="fas fa-shield-alt" style="font-size: 10px;"></i> {{ ucfirst(Auth::user()->role ?? 'Admin') }}
                 </div>
             </div>
         </div>
@@ -69,7 +70,12 @@
                     <a href="#" class="nav-link">
                         <div class="nav-icon"><i class="fas fa-table"></i></div>
                         <div class="nav-text">Nilai Kriteria</div>
-                            <span class="nav-badge"></span>
+                        @php
+                            $pendingCount = \App\Models\NilaiKriteriaJalan::where('status_validasi', 'pending')->count();
+                        @endphp
+                        @if($pendingCount > 0)
+                            <span class="nav-badge">{{ $pendingCount }}</span>
+                        @endif
                     </a>
                 </li>
             </ul>
