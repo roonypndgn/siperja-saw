@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('hasil_saws', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('jalan_id')->constrained('jalan')->onDelete('cascade');
+            $table->foreignId('jalan_id')->constrained('jalans')->onDelete('cascade');
             $table->decimal('skor_akhir', 10, 6); // Nilai akhir V
             $table->integer('peringkat'); // Peringkat/ranking
-            $table->year('tahun_perhitungan')->default(date('Y'));
+            $table->year('tahun_perhitungan');
             $table->json('detail_perhitungan')->nullable(); // Detail perhitungan dalam JSON
-            $table->date('tanggal_perhitungan')->default(now());
+            $table->date('tanggal_perhitungan');
             $table->timestamps();
             
             // Index untuk pencarian
