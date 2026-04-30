@@ -77,7 +77,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('admin.kriteria.index') }}" class="nav-link {{ request()->routeIs('admin.kriteria.index') ? 'active' : '' }}">
                         <div class="nav-icon"><i class="fas fa-sliders-h"></i></div>
                         <div class="nav-text">Kriteria & Bobot</div>
                     </a>

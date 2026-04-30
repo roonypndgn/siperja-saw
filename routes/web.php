@@ -52,11 +52,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     });
     //Route untuk kriteria 
     Route::resource('kriteria', KriteriaController::class);
-    Route::get('/kriteria/cek-kode', [KriteriaController::class, 'cekKode'])->name('admin.kriteria.cekKode');
-    Route::get('/kriteria/cek-urutan', [KriteriaController::class, 'cekUrutan'])->name('admin.kriteria.cekUrutan');
-    Route::post('/kriteria/update-bobot', [KriteriaController::class, 'updateBobot'])->name('admin.kriteria.updateBobot');
-    Route::post('/kriteria/reorder', [KriteriaController::class, 'reorder'])->name('admin.kriteria.reorder');
-    Route::post('/kriteria/{id}/toggle-status', [KriteriaController::class, 'toggleStatus'])->name('admin.kriteria.toggleStatus');
+    Route::prefix('kriteria')->name('kriteria.')->group(function(){
+    Route::get('/cek-kode', [KriteriaController::class, 'cekKode'])->name('cekKode');
+    Route::get('/cek-urutan', [KriteriaController::class, 'cekUrutan'])->name('cekUrutan');
+    Route::post('/update-bobot', [KriteriaController::class, 'updateBobot'])->name('updateBobot');
+    Route::post('/reorder', [KriteriaController::class, 'reorder'])->name('reorder');
+    Route::post('{id}/toggle-status', [KriteriaController::class, 'toggleStatus'])->name('toggle-status');
+    });
+    
 });
 
 
