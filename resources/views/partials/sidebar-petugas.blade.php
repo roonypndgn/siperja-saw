@@ -64,7 +64,7 @@
             <div class="nav-label">DATA JALAN</div>
             <ul class="nav-items">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('petugas.jalan.index') }}" class="nav-link {{ request()->routeIs('petugas.jalan.index') ? 'active' : '' }}">
                         <div class="nav-icon"><i class="fas fa-road"></i></div>
                         <div class="nav-text">Daftar Jalan</div>
                     </a>

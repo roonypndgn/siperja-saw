@@ -71,7 +71,7 @@
             <div class="nav-label">MASTER DATA</div>
             <ul class="nav-items">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('admin.jalan.index') }}" class="nav-link {{ request()->routeIs('admin.jalan.index') ? 'active' : '' }}">
                         <div class="nav-icon"><i class="fas fa-road"></i></div>
                         <div class="nav-text">Data Jalan</div>
                     </a>
