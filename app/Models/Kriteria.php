@@ -13,14 +13,7 @@ class Kriteria extends Model
     protected $table = 'kriterias';
 
     protected $fillable = [
-        'kode',
-        'nama',
-        'keterangan',
-        'tipe',
-        'bobot',
-        'satuan',
-        'is_active',
-        'urutan'
+        'kode', 'nama', 'keterangan', 'tipe', 'bobot', 'satuan', 'is_active', 'urutan'
     ];
 
     protected $casts = [
@@ -28,33 +21,25 @@ class Kriteria extends Model
         'is_active' => 'boolean',
     ];
 
-    // Relasi ke nilai kriteria jalan
+    // Relasi
     public function nilaiKriteriaJalan()
     {
         return $this->hasMany(NilaiKriteriaJalan::class);
     }
 
-    // Scope untuk kriteria aktif
+    // Scope
     public function scopeAktif($query)
     {
         return $query->where('is_active', true);
     }
 
-    // Scope untuk benefit
     public function scopeBenefit($query)
     {
         return $query->where('tipe', 'benefit');
     }
 
-    // Scope untuk cost
     public function scopeCost($query)
     {
         return $query->where('tipe', 'cost');
-    }
-
-    // Accessor
-    public function getNamaLengkapAttribute()
-    {
-        return "{$this->kode} - {$this->nama} ({$this->bobot})";
     }
 }

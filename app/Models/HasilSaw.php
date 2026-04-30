@@ -12,12 +12,8 @@ class HasilSaw extends Model
     protected $table = 'hasil_saws';
 
     protected $fillable = [
-        'jalan_id',
-        'skor_akhir',
-        'peringkat',
-        'tahun_perhitungan',
-        'detail_perhitungan',
-        'tanggal_perhitangan'
+        'jalan_id', 'skor_akhir', 'peringkat', 'tahun_perhitungan',
+        'detail_perhitungan', 'tanggal_perhitungan', 'dihitung_oleh'
     ];
 
     protected $casts = [
@@ -27,19 +23,23 @@ class HasilSaw extends Model
         'tanggal_perhitungan' => 'date',
     ];
 
-    // Relasi ke jalan
+    // Relasi
     public function jalan()
     {
         return $this->belongsTo(Jalan::class);
     }
 
-    // Scope untuk tahun tertentu
+    public function dihitungOleh()
+    {
+        return $this->belongsTo(User::class, 'dihitung_oleh');
+    }
+
+    // Scope
     public function scopeTahun($query, $tahun)
     {
         return $query->where('tahun_perhitungan', $tahun);
     }
 
-    // Mendapatkan peringkat teratas
     public function scopePeringkatTeratas($query, $limit = 10)
     {
         return $query->orderBy('peringkat', 'asc')->limit($limit);

@@ -16,11 +16,12 @@ return new class extends Migration
             $table->year('tahun_perhitungan');
             $table->json('detail_perhitungan')->nullable(); // Detail perhitungan dalam JSON
             $table->date('tanggal_perhitungan');
+            $table->foreignId('dihitung_oleh')->constrained('users');
             $table->timestamps();
             
             // Index untuk pencarian
+            $table->unique(['jalan_id', 'tahun_perhitungan']);
             $table->index(['tahun_perhitungan', 'peringkat']);
-            $table->unique(['jalan_id', 'tahun_perhitungan'], 'unique_jalan_hasil_tahun');
         });
     }
 

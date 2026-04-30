@@ -18,6 +18,8 @@ return new class extends Migration
             $table->decimal('latitude', 10, 8)->nullable(); // Untuk peta
             $table->decimal('longitude', 11, 8)->nullable(); // Untuk peta
             $table->boolean('is_active')->default(true);
+            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('updated_by')->nullable()->constrained('users');
             $table->timestamps();
             $table->softDeletes(); // Soft delete
         });
