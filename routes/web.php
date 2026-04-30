@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\JalanController;
-use App\Http\Controllers\Petugas\JalanPController;
+use App\Http\Controllers\Admin\KriteriaController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Petugas\JalanPController;
 use App\Http\Controllers\PetugasDashboardController;
 
 /*
@@ -48,7 +49,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('export/excel', [JalanController::class, 'export'])->name('export.excel');
         Route::get('export/csv', [JalanController::class, 'exportCsv'])->name('export.csv');
         Route::get('export/pdf', [JalanController::class, 'exportPdf'])->name('export.pdf');
-});
+    });
+    //Route untuk kriteria 
+    Route::resource('kriteria', KriteriaController::class);
+    Route::get('/kriteria/cek-kode', [KriteriaController::class, 'cekKode'])->name('admin.kriteria.cekKode');
+    Route::get('/kriteria/cek-urutan', [KriteriaController::class, 'cekUrutan'])->name('admin.kriteria.cekUrutan');
+    Route::post('/kriteria/update-bobot', [KriteriaController::class, 'updateBobot'])->name('admin.kriteria.updateBobot');
+    Route::post('/kriteria/reorder', [KriteriaController::class, 'reorder'])->name('admin.kriteria.reorder');
+    Route::post('/kriteria/{id}/toggle-status', [KriteriaController::class, 'toggleStatus'])->name('admin.kriteria.toggleStatus');
 });
 
 
