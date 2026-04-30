@@ -17,36 +17,46 @@ class NilaiKriteriaController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    {
-        $tahun = $request->get('tahun', date('Y'));
-        $status = $request->get('status', 'pending');
-        
-        $nilai = NilaiKriteriaJalan::with(['jalan', 'kriteria', 'createdBy', 'validatedBy'])
-            ->where('tahun_penilaian', $tahun)
-            ->when($status, function($query, $status) {
-                if ($status != 'semua') {
-                    $query->where('status_validasi', $status);
-                }
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(20)
-            ->withQueryString();
-        
-        // Statistik
-        $statistik = [
-            'total' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->count(),
-            'pending' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'pending')->count(),
-            'divalidasi' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'divalidasi')->count(),
-            'ditolak' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'ditolak')->count(),
-        ];
-        
-        $tahunList = NilaiKriteriaJalan::select('tahun_penilaian')
-            ->distinct()
-            ->orderBy('tahun_penilaian', 'desc')
-            ->pluck('tahun_penilaian');
-        
-        return view('admin.nilai-kriteria.index', compact('nilai', 'tahun', 'status', 'statistik', 'tahunList'));
+{
+    $tahun = $request->get('tahun', date('Y'));
+    $status = $request->get('status', 'semua'); // Ubah default menjadi 'semua'
+    
+    // Debug: cek total data di database
+    $totalData = NilaiKriteriaJalan::count();
+    \Log::info('Total data nilai_kriteria_jalans: ' . $totalData);
+    
+    $nilai = NilaiKriteriaJalan::with(['jalan', 'kriteria', 'createdBy', 'validatedBy'])
+        ->where('tahun_penilaian', $tahun)
+        ->when($status != 'semua', function($query) use ($status) {
+            $query->where('status_validasi', $status);
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(20)
+        ->withQueryString();
+    
+    // Debug: cek jumlah data yang ditemukan
+    \Log::info('Data ditemukan untuk tahun ' . $tahun . ': ' . $nilai->total());
+    
+    // Statistik
+    $statistik = [
+        'total' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->count(),
+        'pending' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'pending')->count(),
+        'divalidasi' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'divalidasi')->count(),
+        'ditolak' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'ditolak')->count(),
+    ];
+    
+    $tahunList = NilaiKriteriaJalan::select('tahun_penilaian')
+        ->distinct()
+        ->orderBy('tahun_penilaian', 'desc')
+        ->pluck('tahun_penilaian');
+    
+    // Jika tahunList kosong, tambahkan tahun ini
+    if ($tahunList->isEmpty()) {
+        $tahunList = collect([date('Y')]);
     }
+    
+    return view('admin.nilai-kriteria.index', compact('nilai', 'tahun', 'status', 'statistik', 'tahunList'));
+}
     
     /**
      * Show the form for creating a new resource.
@@ -76,29 +86,46 @@ class NilaiKriteriaController extends Controller
      */
     public function store(Request $request)
     {
+        // HAPUS validasi min:0|max:100, biarkan nilai bebas
         $validator = Validator::make($request->all(), [
             'jalan_id' => 'required|exists:jalans,id',
             'tahun_penilaian' => 'required|integer|min:2000|max:' . (date('Y') + 1),
             'nilai' => 'required|array',
-            'nilai.*' => 'required|numeric|min:0|max:100',
+            'nilai.*' => 'required|numeric', // Hanya required|numeric, tanpa batasan
             'catatan' => 'nullable|string',
         ]);
         
         if ($validator->fails()) {
+            // Tampilkan error detail untuk debugging
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Validasi gagal: ' . $validator->errors()->first());
         }
         
         $jalanId = $request->jalan_id;
         $tahun = $request->tahun_penilaian;
         $nilaiArray = $request->nilai;
         
+        // Debug: cek data yang masuk
+        \Log::info('Data yang disimpan:', [
+            'jalan_id' => $jalanId,
+            'tahun' => $tahun,
+            'nilai' => $nilaiArray,
+            'user_id' => Auth::id()
+        ]);
+        
         DB::beginTransaction();
         
         try {
+            $savedCount = 0;
             foreach ($nilaiArray as $kriteriaId => $nilai) {
-                NilaiKriteriaJalan::updateOrCreate(
+                // Pastikan nilai tidak null
+                if ($nilai === null || $nilai === '') {
+                    continue;
+                }
+                
+                $result = NilaiKriteriaJalan::updateOrCreate(
                     [
                         'jalan_id' => $jalanId,
                         'kriteria_id' => $kriteriaId,
@@ -111,15 +138,23 @@ class NilaiKriteriaController extends Controller
                         'created_by' => Auth::id(),
                     ]
                 );
+                $savedCount++;
             }
             
             DB::commit();
+            
+            \Log::info('Data berhasil disimpan', ['count' => $savedCount]);
             
             return redirect()->route('admin.nilai-kriteria.index', ['tahun' => $tahun])
                 ->with('success', 'Data nilai kriteria berhasil disimpan! Menunggu validasi admin.');
                 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error saat menyimpan nilai kriteria:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
                 ->withInput();
