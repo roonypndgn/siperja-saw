@@ -4,16 +4,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
     /**
-     * Show login form
+     * Menampilkan halaman login (GET)
      */
     public function showLoginForm()
     {
@@ -21,7 +19,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle login request with NIP
+     * Memproses login (POST)
      */
     public function login(Request $request)
     {
@@ -66,7 +64,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle logout
+     * Memproses logout (POST)
      */
     public function logout(Request $request)
     {
