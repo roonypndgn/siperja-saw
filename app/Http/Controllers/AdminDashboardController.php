@@ -11,7 +11,7 @@ class AdminDashboardController extends Controller
      */
     public function index()
     {
-        return view('layouts.admin');
+        return view('admin.dashboard');
     }
 
     /**
