@@ -1,4 +1,3 @@
-// database/migrations/2024_01_01_000004_create_hasil_saw_table.php
 <?php
 
 use Illuminate\Database\Migrations\Migration;
