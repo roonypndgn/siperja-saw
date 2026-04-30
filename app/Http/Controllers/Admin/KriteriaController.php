@@ -69,7 +69,10 @@ class KriteriaController extends Controller
         $lastUrutan = Kriteria::max('urutan');
         $nextUrutan = $lastUrutan + 1;
         
-        return view('admin.kriteria.create', compact('kodeOtomatis', 'nextUrutan'));
+        // Total bobot aktif saat ini
+        $totalBobotAktif = Kriteria::where('is_active', true)->sum('bobot');
+        
+        return view('admin.kriteria.create', compact('kodeOtomatis', 'nextUrutan', 'totalBobotAktif'));
     }
 
     /**
