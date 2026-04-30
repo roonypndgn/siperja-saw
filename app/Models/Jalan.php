@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\HasilSaw;
 use App\Models\NilaiKriteriaJalan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
