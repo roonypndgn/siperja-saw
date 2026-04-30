@@ -154,7 +154,13 @@ class KriteriaController extends Controller
     public function edit($id)
     {
         $kriteria = Kriteria::findOrFail($id);
-        return view('admin.kriteria.edit', compact('kriteria'));
+        
+        // Total bobot aktif tanpa kriteria ini
+        $totalBobotTanpaIni = Kriteria::where('is_active', true)
+            ->where('id', '!=', $id)
+            ->sum('bobot');
+        
+        return view('admin.kriteria.edit', compact('kriteria', 'totalBobotTanpaIni'));
     }
 
     /**
