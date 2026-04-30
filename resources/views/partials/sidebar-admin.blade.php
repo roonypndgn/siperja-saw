@@ -1,6 +1,6 @@
 <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-        <a href="#" class="brand">
+        <a href="{{ route('admin.dashboard') }}" class="brand">
             <div class="brand-icon" style="background: white; display: flex; align-items: center; justify-content: center;">
                 @if(file_exists(public_path('images/logo-pu.png')))
                     <img src="{{ asset('images/logo-pu.png') }}" alt="Logo PU" style="width: 80%; height: 80%; object-fit: contain;">
@@ -23,18 +23,34 @@
         </div>
     
     <div class="user-card">
-        <div class="user-avatar">
-            <div class="avatar-img">
+    <div class="user-avatar">
+        @if(Auth::user()->foto)
+            <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto" class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover;">
+        @else
+            <div class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%); display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-weight: 700; font-size: 18px;">
                 {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
             </div>
-            <div class="user-details">
-                <div class="user-name">{{ Auth::user()->name ?? 'Administrator' }}</div>
-                <div class="user-role">
-                    <i class="fas fa-shield-alt" style="font-size: 10px;"></i> {{ ucfirst(Auth::user()->role ?? 'Admin') }}
-                </div>
+        @endif
+        <div class="user-details">
+            <div class="user-name">{{ Auth::user()->name ?? 'Administrator' }}</div>
+            <div class="user-role">
+                <i class="" style="font-size: 10px;"></i> 
+                @if(Auth::user()->role == 'admin')
+                    Administrator
+                @elseif(Auth::user()->role == 'petugas')
+                    Petugas Lapangan
+                @else
+                    {{ ucfirst(Auth::user()->role ?? 'Admin') }}
+                @endif
             </div>
+            @if(Auth::user()->nip)
+                <div class="user-nip" style="font-size: 10px; color: #fffff; margin-top: 2px;">
+                    NIP: {{ Auth::user()->nip }}
+                </div>
+            @endif
         </div>
     </div>
+</div>
     
     <div class="sidebar-nav">
         <!-- Menu Utama -->
@@ -42,7 +58,7 @@
             <div class="nav-label">UTAMA</div>
             <ul class="nav-items">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <div class="nav-icon"><i class="fas fa-chart-pie"></i></div>
                         <div class="nav-text">Dashboard</div>
                     </a>

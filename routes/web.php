@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\JalanController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PetugasDashboardController;
@@ -36,6 +37,14 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 */
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::resource('jalan', JalanController::class);
+    
+    // Route tambahan untuk jalan
+    Route::prefix('jalan')->name('jalan.')->group(function () {
+        Route::post('{id}/restore', [JalanController::class, 'restore'])->name('restore');
+        Route::delete('{id}/force-delete', [JalanController::class, 'forceDelete'])->name('force-delete');
+        Route::patch('{id}/toggle-status', [JalanController::class, 'toggleStatus'])->name('toggle-status');
+        Route::get('export/csv', [JalanController::class, 'export'])->name('export');
 });
 
 /*

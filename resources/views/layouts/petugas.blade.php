@@ -149,7 +149,82 @@
             color: rgba(255, 255, 255, 0.6);
             margin-top: 2px;
         }
-        
+        .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 16px;
+    margin-bottom: 20px;
+}
+
+.user-avatar-wrapper {
+    flex-shrink: 0;
+}
+
+.user-avatar-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    object-fit: cover;
+    border: 2px solid var(--secondary);
+}
+
+.user-avatar-initial {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-info-wrapper {
+    flex: 1;
+}
+
+.user-fullname {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 4px;
+}
+
+.badge-admin {
+    display: inline-block;
+    background: rgba(249, 168, 38, 0.2);
+    color: var(--secondary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge-petugas {
+    display: inline-block;
+    background: rgba(59, 130, 246, 0.2);
+    color: #60A5FA;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.user-nip {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 6px;
+}
+
+.user-nip i {
+    margin-right: 4px;
+}
         /* User Profile - Petugas */
         .user-card {
             margin: 20px 16px;
@@ -677,7 +752,7 @@
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
         @csrf
     </form>
-    
+
     @include('partials.sidebar-petugas')
     
     <main class="main-content">
