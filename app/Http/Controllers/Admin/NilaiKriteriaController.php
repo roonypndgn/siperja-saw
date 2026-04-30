@@ -192,37 +192,43 @@ class NilaiKriteriaController extends Controller
             ->with('success', 'Data nilai berhasil dihapus!');
     }
     
-    /**
-     * Validasi data nilai (Admin only)
-     */
-    public function validateData(Request $request, $id)
-    {
-        $nilai = NilaiKriteriaJalan::findOrFail($id);
-        
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|in:divalidasi,ditolak',
-            'catatan_validasi' => 'nullable|string',
-        ]);
-        
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator);
+/**
+ * Validasi data nilai (Admin only)
+ */
+public function validateData(Request $request, $id)
+{
+    $nilai = NilaiKriteriaJalan::findOrFail($id);
+    
+    $validator = Validator::make($request->all(), [
+        'status' => 'required|in:divalidasi,ditolak',
+        'catatan_validasi' => 'nullable|string',
+    ]);
+    
+    if ($validator->fails()) {
+        if ($request->ajax()) {
+            return response()->json(['error' => $validator->errors()], 422);
         }
-        
-        $nilai->update([
-            'status_validasi' => $request->status,
-            'validated_by' => Auth::id(),
-            'validated_at' => now(),
-            'catatan' => $request->catatan_validasi ?? $nilai->catatan,
-        ]);
-        
-        $message = $request->status == 'divalidasi' 
-            ? 'Data nilai berhasil divalidasi!' 
-            : 'Data nilai ditolak. Silakan input ulang.';
-        
-        return redirect()->route('admin.nilai-kriteria.index')
-            ->with('success', $message);
+        return redirect()->back()->withErrors($validator);
     }
+    
+    $nilai->update([
+        'status_validasi' => $request->status,
+        'validated_by' => Auth::id(),
+        'validated_at' => now(),
+        'catatan' => $request->catatan_validasi ?? $nilai->catatan,
+    ]);
+    
+    if ($request->ajax()) {
+        return response()->json(['success' => true]);
+    }
+    
+    $message = $request->status == 'divalidasi' 
+        ? 'Data nilai berhasil divalidasi!' 
+        : 'Data nilai ditolak. Silakan input ulang.';
+    
+    return redirect()->route('admin.nilai-kriteria.index')
+        ->with('success', $message);
+}
     
     /**
      * Validasi massal (Admin only)

@@ -61,15 +61,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::post('{id}/toggle-status', [KriteriaController::class, 'toggleStatus'])->name('toggle-status');
     });
     //Route untuk nilai kriteria
-    Route::resource('nilai-kriteria', NilaiKriteriaController::class)->names([
-        'index' => 'admin.nilai-kriteria.index',
-        'create' => 'admin.nilai-kriteria.create',
-        'store' => 'admin.nilai-kriteria.store',
-        'show' => 'admin.nilai-kriteria.show',
-        'edit' => 'admin.nilai-kriteria.edit',
-        'update' => 'admin.nilai-kriteria.update',
-        'destroy' => 'admin.nilai-kriteria.destroy',
-    ]);
+    Route::resource('nilai-kriteria', NilaiKriteriaController::class);
     Route::prefix('nilai-kriteria')->name('nilai-kriteria.')->group(function(){
         Route::post('/{id}/validate', [NilaiKriteriaController::class, 'validateData'])->name('validate');
         Route::post('/validate-mass', [NilaiKriteriaController::class, 'validateMass'])->name('validate-mass');

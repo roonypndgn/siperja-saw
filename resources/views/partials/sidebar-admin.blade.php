@@ -83,7 +83,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('admin.nilai-kriteria.index') }}" class="nav-link {{ request()->routeIs('admin.nilai-kriteria.index') ? 'active' : '' }}">
                         <div class="nav-icon"><i class="fas fa-table"></i></div>
                         <div class="nav-text">Nilai Kriteria</div>
                         @php
