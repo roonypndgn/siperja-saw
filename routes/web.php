@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\JalanController;
 use App\Http\Controllers\Admin\KriteriaController;
+use App\Http\Controllers\Admin\NilaiKriteriaController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Petugas\JalanPController;
@@ -53,13 +54,28 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     //Route untuk kriteria 
     Route::resource('kriteria', KriteriaController::class);
     Route::prefix('kriteria')->name('kriteria.')->group(function(){
-    Route::get('/cek-kode', [KriteriaController::class, 'cekKode'])->name('cekKode');
-    Route::get('/cek-urutan', [KriteriaController::class, 'cekUrutan'])->name('cekUrutan');
-    Route::post('/update-bobot', [KriteriaController::class, 'updateBobot'])->name('updateBobot');
-    Route::post('/reorder', [KriteriaController::class, 'reorder'])->name('reorder');
-    Route::post('{id}/toggle-status', [KriteriaController::class, 'toggleStatus'])->name('toggle-status');
+        Route::get('/cek-kode', [KriteriaController::class, 'cekKode'])->name('cekKode');
+        Route::get('/cek-urutan', [KriteriaController::class, 'cekUrutan'])->name('cekUrutan');
+        Route::post('/update-bobot', [KriteriaController::class, 'updateBobot'])->name('updateBobot');
+        Route::post('/reorder', [KriteriaController::class, 'reorder'])->name('reorder');
+        Route::post('{id}/toggle-status', [KriteriaController::class, 'toggleStatus'])->name('toggle-status');
     });
-    
+    //Route untuk nilai kriteria
+    Route::resource('nilai-kriteria', NilaiKriteriaController::class)->names([
+        'index' => 'admin.nilai-kriteria.index',
+        'create' => 'admin.nilai-kriteria.create',
+        'store' => 'admin.nilai-kriteria.store',
+        'show' => 'admin.nilai-kriteria.show',
+        'edit' => 'admin.nilai-kriteria.edit',
+        'update' => 'admin.nilai-kriteria.update',
+        'destroy' => 'admin.nilai-kriteria.destroy',
+    ]);
+    Route::prefix('nilai-kriteria')->name('nilai-kriteria.')->group(function(){
+        Route::post('/{id}/validate', [NilaiKriteriaController::class, 'validateData'])->name('validate');
+        Route::post('/validate-mass', [NilaiKriteriaController::class, 'validateMass'])->name('validate-mass');
+        Route::get('/cek-kelengkapan', [NilaiKriteriaController::class, 'cekKelengkapan'])->name('cek-kelengkapan');
+        Route::get('/get-by-jalan', [NilaiKriteriaController::class, 'getNilaiByJalan'])->name('get-by-jalan');
+    });
 });
 
 

@@ -145,7 +145,14 @@ class KriteriaController extends Controller
         $tahunTerakhir = $kriteria->nilaiKriteriaJalan()->max('tahun_penilaian');
         $rataRataNilai = $kriteria->nilaiKriteriaJalan()->avg('nilai');
         
-        return view('admin.kriteria.show', compact('kriteria', 'totalPenggunaan', 'tahunTerakhir', 'rataRataNilai'));
+        // Riwayat penilaian (10 terbaru)
+        $riwayatPenilaian = $kriteria->nilaiKriteriaJalan()
+            ->with(['jalan', 'createdBy'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+        
+        return view('admin.kriteria.show', compact('kriteria', 'totalPenggunaan', 'tahunTerakhir', 'rataRataNilai', 'riwayatPenilaian'));
     }
 
     /**
