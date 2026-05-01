@@ -224,13 +224,51 @@ class NilaiKriteriaController extends Controller
 
     /**
      * Display the specified resource.
+     * Menampilkan detail semua nilai kriteria untuk satu jalan dalam satu tahun
      */
     public function show($id)
     {
-        $nilai = NilaiKriteriaJalan::with(['jalan', 'kriteria', 'createdBy', 'validatedBy'])
-            ->findOrFail($id);
+        // Cari salah satu nilai untuk mendapatkan jalan_id dan tahun
+        $sampleNilai = NilaiKriteriaJalan::findOrFail($id);
 
-        return view('admin.nilai-kriteria.show', compact('nilai'));
+        $jalanId = $sampleNilai->jalan_id;
+        $tahun = $sampleNilai->tahun_penilaian;
+
+        // Ambil data jalan
+        $jalan = Jalan::findOrFail($jalanId);
+
+        // Ambil semua kriteria aktif
+        $kriteria = Kriteria::where('is_active', true)->orderBy('urutan')->get();
+
+        // Ambil semua nilai untuk jalan dan tahun tersebut
+        $nilai = NilaiKriteriaJalan::where('jalan_id', $jalanId)
+            ->where('tahun_penilaian', $tahun)
+            ->get()
+            ->keyBy('kriteria_id');
+
+        // Hitung rata-rata nilai
+        $rataRataNilai = $nilai->avg('nilai') ?? 0;
+
+        // Hitung ringkasan status
+        $summary = [
+            'valid' => $nilai->where('status_validasi', 'divalidasi')->count(),
+            'pending' => $nilai->where('status_validasi', 'pending')->count(),
+            'rejected' => $nilai->where('status_validasi', 'ditolak')->count(),
+            'empty' => $kriteria->count() - $nilai->count(),
+        ];
+
+        // Informasi validator (ambil dari data pertama yang sudah divalidasi)
+        $firstValidated = $nilai->firstWhere('status_validasi', 'divalidasi');
+        $validatorInfo = null;
+        if ($firstValidated && $firstValidated->validated_by) {
+            $validatorInfo = [
+                'name' => $firstValidated->validatedBy->name ?? '-',
+                'date' => $firstValidated->validated_at ? $firstValidated->validated_at->translatedFormat('d F Y H:i') : '-',
+                'catatan' => $firstValidated->catatan,
+            ];
+        }
+
+        return view('admin.nilai-kriteria.show', compact('jalan', 'kriteria', 'nilai', 'tahun', 'rataRataNilai', 'summary', 'validatorInfo'));
     }
 
     /**
