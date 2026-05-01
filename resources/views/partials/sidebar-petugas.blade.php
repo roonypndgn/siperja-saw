@@ -100,12 +100,12 @@
 
         <!-- Informasi -->
         <div class="nav-group">
-            <div class="nav-label">INFORMASI</div>
+            <div class="nav-label">PANDUAN</div>
             <ul class="nav-items">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <div class="nav-icon"><i class="fas fa-question-circle"></i></div>
-                        <div class="nav-text">Panduan</div>
+                    <a href="{{ route('petugas.panduan.index') }}" class="nav-link {{ request()->routeIs('petugas.panduan.*') ? 'active' : '' }}">
+                        <div class="nav-icon"><i class="fas fa-book-open"></i></div>
+                        <div class="nav-text">Panduan Penggunaan</div>
                     </a>
                 </li>
             </ul>
