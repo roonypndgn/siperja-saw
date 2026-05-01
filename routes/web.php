@@ -116,7 +116,7 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
         Route::get('/riwayat/nilai', [NilaiKController::class, 'riwayat'])->name('riwayat');
     });
     // Route Panduan
-    Route::prefix('panduan')->name('petugas.panduan.')->group(function () {
+    Route::prefix('panduan')->name('panduan.')->group(function () {
         Route::get('/', [PanduanController::class, 'index'])->name('index');
         Route::get('/input-nilai', [PanduanController::class, 'inputNilai'])->name('input-nilai');
         Route::get('/manajemen-jalan', [PanduanController::class, 'manajemenJalan'])->name('manajemen-jalan');
