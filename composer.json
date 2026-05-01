@@ -16,6 +16,7 @@
         "maatwebsite/excel": "*"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "*",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^2.4",
         "laravel/pail": "^1.2.5",

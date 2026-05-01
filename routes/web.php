@@ -68,6 +68,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/cek-kelengkapan', [NilaiKriteriaController::class, 'cekKelengkapan'])->name('cek-kelengkapan');
         Route::get('/get-by-jalan', [NilaiKriteriaController::class, 'getNilaiByJalan'])->name('get-by-jalan');
     });
+    Route::delete('/nilai-kriteria/delete-by-jalan/{jalanId}/{tahun}', [NilaiKriteriaController::class, 'deleteByJalan'])
+        ->name('admin.nilai-kriteria.delete-by-jalan');
+    
 });
 
 
