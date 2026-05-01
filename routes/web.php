@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\JalanController;
 use App\Http\Controllers\Admin\KriteriaController;
 use App\Http\Controllers\Petugas\NilaiKController;
 use App\Http\Controllers\Petugas\PanduanController;
+use App\Http\Controllers\Petugas\ProfilController;
 use App\Http\Controllers\Admin\NilaiKriteriaController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\AuthController;
@@ -122,5 +123,13 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
         Route::get('/manajemen-jalan', [PanduanController::class, 'manajemenJalan'])->name('manajemen-jalan');
         Route::get('/riwayat-penilaian', [PanduanController::class, 'riwayatPenilaian'])->name('riwayat-penilaian');
         Route::get('/faq', [PanduanController::class, 'faq'])->name('faq');
+    });
+    Route::prefix('profil')->name('petugas.profil.')->group(function () {
+        Route::get('/', [ProfilController::class, 'index'])->name('index');
+        Route::get('/edit', [ProfilController::class, 'edit'])->name('edit');
+        Route::put('/update', [ProfilController::class, 'update'])->name('update');
+        Route::get('/change-password', [ProfilController::class, 'changePasswordForm'])->name('change-password');
+        Route::post('/update-password', [ProfilController::class, 'updatePassword'])->name('update-password');
+        Route::delete('/remove-foto', [ProfilController::class, 'removeFoto'])->name('remove-foto');
     });
 });
