@@ -72,32 +72,31 @@
             </ul>
         </div>
         
-        <!-- Nilai Kriteria (Tugas Utama Petugas) -->
         <div class="nav-group">
-            <div class="nav-label">PENGISIAN NILAI</div>
-            <ul class="nav-items">
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <div class="nav-icon"><i class="fas fa-edit"></i></div>
-                        <div class="nav-text">Input Nilai Kriteria</div>
-                        @php
-                            $pendingCount = \App\Models\NilaiKriteriaJalan::where('created_by', Auth::id())
-                                ->where('status_validasi', 'pending')
-                                ->count();
-                        @endphp
-                        @if($pendingCount > 0)
-                            <span class="nav-badge">{{ $pendingCount }}</span>
-                        @endif
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <div class="nav-icon"><i class="fas fa-history"></i></div>
-                        <div class="nav-text">Riwayat Penilaian</div>
-                    </a>
-                </li>
-            </ul>
-        </div>
+    <div class="nav-label">PENGISIAN NILAI</div>
+    <ul class="nav-items">
+        <li class="nav-item">
+            <a href="{{ route('petugas.nilai-kriteria.index') }}" class="nav-link {{ request()->routeIs('petugas.nilai-kriteria.*') ? 'active' : '' }}">
+                <div class="nav-icon"><i class="fas fa-edit"></i></div>
+                <div class="nav-text">Input Nilai Kriteria</div>
+                @php
+                    $pendingCount = \App\Models\NilaiKriteriaJalan::where('created_by', Auth::id())
+                        ->where('status_validasi', 'pending')
+                        ->count();
+                @endphp
+                @if($pendingCount > 0)
+                    <span class="nav-badge">{{ $pendingCount }}</span>
+                @endif
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('petugas.nilai-kriteria.riwayat-nilai') }}" class="nav-link {{ request()->routeIs('petugas.nilai-kriteria.riwayat-nilai') ? 'active' : '' }}">
+                <div class="nav-icon"><i class="fas fa-history"></i></div>
+                <div class="nav-text">Riwayat Penilaian</div>
+            </a>
+        </li>
+    </ul>
+</div>
         
         <!-- Informasi -->
         <div class="nav-group">

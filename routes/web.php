@@ -84,25 +84,21 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function () {
+    
     Route::get('/dashboard', [PetugasDashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/jalan/get-koordinat', [JalanPController::class, 'getKoordinatFromAlamat'])->name('petugas.jalan.getKoordinat');
-    // Prefix 'jalan' untuk URL, dan Name 'jalan.' untuk route
-    Route::prefix('jalan')->name('jalan.')->group(function () {
-        // Cukup tulis seperti ini, otomatis jadi petugas.jalan.index, petugas.jalan.create, dst.
-        Route::resource('/', JalanPController::class)->parameters(['' => 'jalan']);
-    });
-    Route::resource('nilai-kriteria', NilaiKController::class)->names([
-        'index' => 'petugas.nilai-kriteria.index',
-        'create' => 'petugas.nilai-kriteria.create',
-        'store' => 'petugas.nilai-kriteria.store',
-        'show' => 'petugas.nilai-kriteria.show',
-        'edit' => 'petugas.nilai-kriteria.edit',
-        'update' => 'petugas.nilai-kriteria.update',
-        // 'destroy' => 'petugas.nilai-kriteria.destroy', // TIDAK ADA
-    ]);
+    // Route Jalan
+    Route::get('/jalan/get-koordinat', [JalanPController::class, 'getKoordinatFromAlamat'])->name('jalan.getKoordinat');
+    Route::resource('jalan', JalanPController::class);
+
+    // Route Nilai Kriteria
+    // Cukup gunakan 'nilai-kriteria', otomatis akan menjadi petugas.nilai-kriteria.index dst.
+    Route::resource('nilai-kriteria', NilaiKController::class)->except(['destroy']);
+
+    // Route Tambahan Nilai Kriteria
     Route::prefix('nilai-kriteria')->name('nilai-kriteria.')->group(function(){
         Route::get('/get-by-jalan', [NilaiKController::class, 'getNilaiByJalan'])->name('get-by-jalan');
         Route::get('/cek-status', [NilaiKController::class, 'cekStatusValidasi'])->name('cek-status');
+        Route::get('/riwayat-nilai', [NilaiKController::class, 'riwayat'])->name('riwayat-nilai');
     });
 });

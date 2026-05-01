@@ -1,4 +1,3 @@
-{{-- resources/views/petugas/jalan/index.blade.php --}}
 @extends('layouts.petugas')
 
 @section('title', 'Data Jalan - Petugas')
