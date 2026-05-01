@@ -13,13 +13,14 @@ use App\Http\Controllers\PetugasDashboardController;
 | ROUTE UNTUK GUEST (BELUM LOGIN)
 |--------------------------------------------------------------------------
 */
+
 Route::middleware('guest')->group(function () {
     // Halaman form login - GET
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    
+
     // Proses login - POST (INI YANG SERING KETINGGALAN)
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-    
+
     // Redirect root
     Route::get('/', function () {
         return redirect()->route('login');
@@ -41,7 +42,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::resource('jalan', JalanController::class);
-    
+
     // Route tambahan untuk jalan
     Route::prefix('jalan')->name('jalan.')->group(function () {
         Route::post('{id}/restore', [JalanController::class, 'restore'])->name('restore');
@@ -53,7 +54,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     });
     //Route untuk kriteria 
     Route::resource('kriteria', KriteriaController::class);
-    Route::prefix('kriteria')->name('kriteria.')->group(function(){
+    Route::prefix('kriteria')->name('kriteria.')->group(function () {
         Route::get('/cek-kode', [KriteriaController::class, 'cekKode'])->name('cekKode');
         Route::get('/cek-urutan', [KriteriaController::class, 'cekUrutan'])->name('cekUrutan');
         Route::post('/update-bobot', [KriteriaController::class, 'updateBobot'])->name('updateBobot');
@@ -62,15 +63,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     });
     //Route untuk nilai kriteria
     Route::resource('nilai-kriteria', NilaiKriteriaController::class);
-    Route::prefix('nilai-kriteria')->name('nilai-kriteria.')->group(function(){
+    Route::prefix('nilai-kriteria')->name('nilai-kriteria.')->group(function () {
         Route::post('/{id}/validate', [NilaiKriteriaController::class, 'validateData'])->name('validate');
         Route::post('/validate-mass', [NilaiKriteriaController::class, 'validateMass'])->name('validate-mass');
         Route::get('/cek-kelengkapan', [NilaiKriteriaController::class, 'cekKelengkapan'])->name('cek-kelengkapan');
         Route::get('/get-by-jalan', [NilaiKriteriaController::class, 'getNilaiByJalan'])->name('get-by-jalan');
+        Route::delete('/delete-by-jalan/{jalanId}/{tahun}', [NilaiKriteriaController::class, 'deleteByJalan'])->name('delete-by-jalan');
+        Route::get('export/excel', [NilaiKriteriaController::class, 'exportExcel'])->name('export-excel');
+        Route::get('export/csv', [NilaiKriteriaController::class, 'exportCsv'])->name('export-csv');
+        Route::get('export/pdf', [NilaiKriteriaController::class, 'exportPdf'])->name('export-pdf');
+        Route::get('export/per-jalan-excel', [NilaiKriteriaController::class, 'exportPerJalanExcel'])->name('export-per-jalan-excel');
     });
-    Route::delete('/nilai-kriteria/delete-by-jalan/{jalanId}/{tahun}', [NilaiKriteriaController::class, 'deleteByJalan'])
-        ->name('admin.nilai-kriteria.delete-by-jalan');
-    
 });
 
 
@@ -81,7 +84,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 */
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function () {
     Route::get('/dashboard', [PetugasDashboardController::class, 'index'])->name('dashboard');
-    
+
     Route::get('/jalan/get-koordinat', [JalanPController::class, 'getKoordinatFromAlamat'])->name('petugas.jalan.getKoordinat');
     // Prefix 'jalan' untuk URL, dan Name 'jalan.' untuk route
     Route::prefix('jalan')->name('jalan.')->group(function () {

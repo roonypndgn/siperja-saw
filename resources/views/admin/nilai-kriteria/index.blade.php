@@ -14,24 +14,29 @@
         <a href="#" class="btn-saw">
             <i class="fas fa-calculator"></i> Proses SAW
         </a>
-
-        <!-- Dropdown Export -->
-        <div class="dropdown" style="position: relative;">
-            <button class="btn-secondary dropdown-toggle" type="button" id="exportDropdown" onclick="toggleDropdown()">
+        <!-- Dropdown Export - Perbaikan -->
+        <div class="dropdown" style="position: relative; display: inline-block;">
+            <button class="btn-secondary dropdown-toggle" type="button" id="exportDropdownBtn" onclick="toggleExportDropdown()">
                 <i class="fas fa-download"></i> Export
                 <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 12px;"></i>
             </button>
-            <div class="dropdown-menu" id="exportDropdownMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 180px; z-index: 1000;">
-                <a class="dropdown-item" href="#" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; text-decoration: none; color: var(--text-dark);">
-                    <i class="fas fa-file-excel" style="color: #10B981;"></i>
-                    <span>Excel</span>
+            <div class="dropdown-menu" id="exportDropdownMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 200px; z-index: 1000;">
+                <a class="dropdown-item" href="{{ route('admin.nilai-kriteria.export-excel', ['tahun' => $tahun, 'status' => $status]) }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; text-decoration: none; color: var(--text-dark); transition: all 0.2s;">
+                    <i class="fas fa-file-excel" style="color: #10B981; width: 20px; font-size: 16px;"></i>
+                    <span>Excel (Detail)</span>
                 </a>
-                <a class="dropdown-item" href="#" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; text-decoration: none; color: var(--text-dark);">
-                    <i class="fas fa-file-csv" style="color: #F59E0B;"></i>
+                <a class="dropdown-item" href="{{ route('admin.nilai-kriteria.export-per-jalan-excel', ['tahun' => $tahun]) }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; text-decoration: none; color: var(--text-dark); transition: all 0.2s;">
+                    <i class="fas fa-file-excel" style="color: #10B981; width: 20px; font-size: 16px;"></i>
+                    <span>Excel (Per Jalan)</span>
+                </a>
+                <div style="height: 1px; background: var(--border); margin: 4px 0;"></div>
+                <a class="dropdown-item" href="{{ route('admin.nilai-kriteria.export-csv', ['tahun' => $tahun, 'status' => $status]) }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; text-decoration: none; color: var(--text-dark); transition: all 0.2s;">
+                    <i class="fas fa-file-csv" style="color: #F59E0B; width: 20px; font-size: 16px;"></i>
                     <span>CSV</span>
                 </a>
-                <a class="dropdown-item" href="#" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; text-decoration: none; color: var(--text-dark);">
-                    <i class="fas fa-file-pdf" style="color: #EF4444;"></i>
+                <div style="height: 1px; background: var(--border); margin: 4px 0;"></div>
+                <a class="dropdown-item" href="{{ route('admin.nilai-kriteria.export-pdf', ['tahun' => $tahun, 'status' => $status]) }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; text-decoration: none; color: var(--text-dark); transition: all 0.2s;">
+                    <i class="fas fa-file-pdf" style="color: #EF4444; width: 20px; font-size: 16px;"></i>
                     <span>PDF</span>
                 </a>
             </div>
@@ -62,57 +67,6 @@
         </a>
         @endif
     </form>
-</div>
-
-<!-- Statistik Cards -->
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px;">
-    <div class="stat-card" style="background: white; border-left: 4px solid #3B82F6; border-radius: 12px; padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="font-size: 13px; color: var(--text-light);">Total Jalan Dinilai</div>
-                <div style="font-size: 28px; font-weight: 800;">{{ $statistik['total_jalan_dinilai'] }}</div>
-            </div>
-            <div style="width: 48px; height: 48px; background: #EFF6FF; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-road" style="font-size: 24px; color: #3B82F6;"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card" style="background: white; border-left: 4px solid #10B981; border-radius: 12px; padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="font-size: 13px; color: var(--text-light);">Data Lengkap</div>
-                <div style="font-size: 28px; font-weight: 800;">{{ $statistik['data_lengkap'] }}</div>
-            </div>
-            <div style="width: 48px; height: 48px; background: #D1FAE5; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-check-circle" style="font-size: 24px; color: #10B981;"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card" style="background: white; border-left: 4px solid #F59E0B; border-radius: 12px; padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="font-size: 13px; color: var(--text-light);">Belum Lengkap</div>
-                <div style="font-size: 28px; font-weight: 800;">{{ $statistik['belum_lengkap'] }}</div>
-            </div>
-            <div style="width: 48px; height: 48px; background: #FEF3C7; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-clock" style="font-size: 24px; color: #F59E0B;"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card" style="background: white; border-left: 4px solid #8B5CF6; border-radius: 12px; padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="font-size: 13px; color: var(--text-light);">Total Nilai</div>
-                <div style="font-size: 28px; font-weight: 800;">{{ $statistik['total_nilai'] }}</div>
-            </div>
-            <div style="width: 48px; height: 48px; background: #EDE9FE; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-chart-line" style="font-size: 24px; color: #8B5CF6;"></i>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Table Data Group by Jalan -->
@@ -301,32 +255,32 @@
             </div>
 
             <h3 style="margin-bottom: 8px; color: #111827; font-weight: 600;">Hapus Semua Nilai</h3>
-            
+
             <p style="color: #6B7280; margin-bottom: 4px; font-size: 14px;">Apakah Anda yakin ingin menghapus semua nilai kriteria untuk:</p>
-            
+
             <!-- Area Nama Jalan & Tahun yang akan diisi via JS -->
             <p style="font-weight: 700; color: #111827; margin-bottom: 16px; font-size: 15px;" id="deleteBulkInfo"></p>
-            
+
             <!-- Warning Message -->
             <div style="background: #FFF5F5; border-radius: 8px; padding: 10px; margin-bottom: 24px;">
                 <p style="color: #EF4444; font-size: 12px; margin: 0; font-weight: 500;">
-                    <i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i> 
+                    <i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i>
                     Tindakan ini tidak dapat dibatalkan!
                 </p>
             </div>
 
             <!-- Action Buttons -->
             <div style="display: flex; gap: 12px; justify-content: center;">
-                <button type="button" 
-                        onclick="closeDeleteBulkModal()" 
-                        class="modal-btn modal-btn-cancel" 
-                        style="flex: 1; padding: 10px 16px; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                <button type="button"
+                    onclick="closeDeleteBulkModal()"
+                    class="modal-btn modal-btn-cancel"
+                    style="flex: 1; padding: 10px 16px; border-radius: 8px; font-weight: 500; cursor: pointer;">
                     Batal
                 </button>
-                <button type="button" 
-                        onclick="submitDeleteBulk()" 
-                        class="modal-btn modal-btn-danger" 
-                        style="flex: 1; padding: 10px 16px; border-radius: 8px; font-weight: 500; cursor: pointer; background: #EF4444; color: white; border: none;">
+                <button type="button"
+                    onclick="submitDeleteBulk()"
+                    class="modal-btn modal-btn-danger"
+                    style="flex: 1; padding: 10px 16px; border-radius: 8px; font-weight: 500; cursor: pointer; background: #EF4444; color: white; border: none;">
                     Ya, Hapus Semua
                 </button>
             </div>
@@ -374,15 +328,17 @@
         transform: translateY(-2px);
         background: #2A3F54;
     }
+
     .btn-delete {
         background: #FEE2E2;
         color: #DC2626;
     }
-    
+
     .btn-delete:hover {
         background: #DC2626;
         color: white;
     }
+
     .btn-secondary {
         background: var(--bg-white);
         color: var(--text-dark);
@@ -841,6 +797,38 @@
     });
 
     // ==================== DROPDOWN HOVER ====================
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'var(--bg-light)';
+        });
+        item.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = 'white';
+        });
+    });
+    // ==================== DROPDOWN EXPORT ====================
+    function toggleExportDropdown() {
+        const menu = document.getElementById('exportDropdownMenu');
+        if (menu.style.display === 'none' || menu.style.display === '') {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    }
+
+    // Tutup dropdown saat klik di luar
+    document.addEventListener('click', function(event) {
+        const dropdown = document.querySelector('.dropdown');
+        const menu = document.getElementById('exportDropdownMenu');
+
+        if (dropdown && menu) {
+            // Cek apakah klik terjadi di luar dropdown
+            if (!dropdown.contains(event.target)) {
+                menu.style.display = 'none';
+            }
+        }
+    });
+
+    // Hover effect untuk dropdown items
     document.querySelectorAll('.dropdown-item').forEach(item => {
         item.addEventListener('mouseenter', function() {
             this.style.backgroundColor = 'var(--bg-light)';

@@ -9,6 +9,10 @@ use App\Models\Kriteria;
 use App\Models\NilaiKriteriaJalan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\NilaiKriteriaExport;
+use App\Exports\NilaiKriteriaPerJalanExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -676,5 +680,74 @@ class NilaiKriteriaController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ]);
         }
+    }
+    /**
+     * Export ke Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $tahun = $request->get('tahun', date('Y'));
+        $status = $request->get('status', 'semua');
+
+        $export = new NilaiKriteriaExport($tahun, $status);
+
+        return Excel::download($export, 'Nilai_Kriteria_' . $tahun . '_' . date('Ymd_His') . '.xlsx');
+    }
+
+    /**
+     * Export ke CSV
+     */
+    public function exportCsv(Request $request)
+    {
+        $tahun = $request->get('tahun', date('Y'));
+        $status = $request->get('status', 'semua');
+
+        $export = new NilaiKriteriaExport($tahun, $status);
+
+        return Excel::download($export, 'Nilai_Kriteria_' . $tahun . '_' . date('Ymd_His') . '.csv', \Maatwebsite\Excel\Excel::CSV);
+    }
+    public function exportPdf(Request $request)
+    {
+        $tahun = $request->get('tahun', date('Y'));
+        $status = $request->get('status', 'semua');
+
+        $query = NilaiKriteriaJalan::with(['jalan', 'kriteria', 'createdBy', 'validatedBy'])
+            ->where('tahun_penilaian', $tahun);
+
+        if ($status && $status != 'semua') {
+            $query->where('status_validasi', $status);
+        }
+
+        $data = $query->orderBy('jalan_id')->orderBy('kriteria_id')->get();
+
+        // Ambil data user yang login lengkap dengan NIP
+        $user = Auth::user();
+
+        $statistik = [
+            'total' => $data->count(),
+            'tahun' => $tahun,
+            'tanggal_cetak' => now('Asia/Jakarta')->translatedFormat('d F Y H:i:s'),
+            'user_name' => $user->name ?? 'Administrator',
+            'user_nip' => $user->nip ?? '.........................'
+        ];
+
+        $title = 'LAPORAN NILAI KRITERIA TAHUN ' . $tahun;
+
+        $pdf = PDF::loadView('exports.nilai-kriteria-pdf', compact('data', 'statistik', 'tahun', 'status', 'title'));
+        $pdf->setPaper('A4', 'landscape');
+
+        return $pdf->download('Laporan_Nilai_Kriteria_' . $tahun . '_' . date('Ymd_His') . '.pdf');
+    }
+
+    /**
+     * Export per Jalan ke Excel
+     */
+    public function exportPerJalanExcel(Request $request)
+    {
+        $tahun = $request->get('tahun', date('Y'));
+
+        $export = new NilaiKriteriaPerJalanExport($tahun);
+
+        return Excel::download($export, 'Nilai_Kriteria_Per_Jalan_' . $tahun . '_' . date('Ymd_His') . '.xlsx');
     }
 }
