@@ -750,4 +750,19 @@ class NilaiKriteriaController extends Controller
 
         return Excel::download($export, 'Nilai_Kriteria_Per_Jalan_' . $tahun . '_' . date('Ymd_His') . '.xlsx');
     }
+/**
+ * Get all pending IDs for a specific road and year (untuk validasi massal)
+ */
+public function getPendingIds(Request $request)
+{
+    $jalanId = $request->get('jalan_id');
+    $tahun = $request->get('tahun', date('Y'));
+    
+    $ids = NilaiKriteriaJalan::where('jalan_id', $jalanId)
+        ->where('tahun_penilaian', $tahun)
+        ->where('status_validasi', 'pending')
+        ->pluck('id');
+    
+    return response()->json(['ids' => $ids]);
+}
 }

@@ -74,6 +74,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('export/csv', [NilaiKriteriaController::class, 'exportCsv'])->name('export-csv');
         Route::get('export/pdf', [NilaiKriteriaController::class, 'exportPdf'])->name('export-pdf');
         Route::get('export/per-jalan-excel', [NilaiKriteriaController::class, 'exportPerJalanExcel'])->name('export-per-jalan-excel');
+        Route::get('/get-pending-ids', [NilaiKriteriaController::class, 'getPendingIds'])->name('get-pending-ids');
     });
 });
 
@@ -84,7 +85,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function () {
-    
+
     Route::get('/dashboard', [PetugasDashboardController::class, 'index'])->name('dashboard');
 
     // Route Jalan
@@ -93,12 +94,24 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
 
     // Route Nilai Kriteria
     // Cukup gunakan 'nilai-kriteria', otomatis akan menjadi petugas.nilai-kriteria.index dst.
-    Route::resource('nilai-kriteria', NilaiKController::class)->except(['destroy']);
+    Route::resource('nilai-kriteria', NilaiKController::class)->except(['destroy','']);
 
     // Route Tambahan Nilai Kriteria
-    Route::prefix('nilai-kriteria')->name('nilai-kriteria.')->group(function(){
+    Route::prefix('nilai-kriteria')->name('nilai-kriteria.')->group(function () {
+        // Redirect index ke create
+        Route::get('/', [NilaiKController::class, 'index'])->name('index');
+        Route::get('/create', [NilaiKController::class, 'create'])->name('create');
+        Route::post('/', [NilaiKController::class, 'store'])->name('store');
+        Route::get('/{id}', [NilaiKController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [NilaiKController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [NilaiKController::class, 'update'])->name('update');
+        Route::delete('/{id}', [NilaiKController::class, 'destroy'])->name('destroy');
+        
+        // AJAX
         Route::get('/get-by-jalan', [NilaiKController::class, 'getNilaiByJalan'])->name('get-by-jalan');
         Route::get('/cek-status', [NilaiKController::class, 'cekStatusValidasi'])->name('cek-status');
-        Route::get('/riwayat-nilai', [NilaiKController::class, 'riwayat'])->name('riwayat-nilai');
+        
+        // RIWAYAT
+        Route::get('/riwayat/nilai', [NilaiKController::class, 'riwayat'])->name('riwayat');
     });
 });

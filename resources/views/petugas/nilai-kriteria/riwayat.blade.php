@@ -37,34 +37,6 @@
     </div>
 </div>
 
-<!-- Statistik Cards -->
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px;">
-    <div class="stat-card" style="background: white; border-left: 4px solid #3B82F6;">
-        <div>
-            <div style="font-size: 13px; color: var(--text-light);">Total Penilaian</div>
-            <div style="font-size: 28px; font-weight: 800;">{{ $statistik['total'] }}</div>
-        </div>
-    </div>
-    <div class="stat-card" style="background: white; border-left: 4px solid #F59E0B;">
-        <div>
-            <div style="font-size: 13px; color: var(--text-light);">Menunggu Validasi</div>
-            <div style="font-size: 28px; font-weight: 800;">{{ $statistik['pending'] }}</div>
-        </div>
-    </div>
-    <div class="stat-card" style="background: white; border-left: 4px solid #10B981;">
-        <div>
-            <div style="font-size: 13px; color: var(--text-light);">Divalidasi</div>
-            <div style="font-size: 28px; font-weight: 800;">{{ $statistik['divalidasi'] }}</div>
-        </div>
-    </div>
-    <div class="stat-card" style="background: white; border-left: 4px solid #EF4444;">
-        <div>
-            <div style="font-size: 13px; color: var(--text-light);">Ditolak</div>
-            <div style="font-size: 28px; font-weight: 800;">{{ $statistik['ditolak'] }}</div>
-        </div>
-    </div>
-</div>
-
 <!-- Table Data -->
 <div class="stat-card" style="padding: 0; overflow: hidden;">
     <div style="overflow-x: auto;">

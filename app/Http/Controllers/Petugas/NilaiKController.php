@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Petugas/NilaiKriteriaController.php
 
 namespace App\Http\Controllers\Petugas;
 
@@ -15,101 +14,10 @@ use Illuminate\Support\Facades\Validator;
 
 class NilaiKController extends Controller
 {
-    /**
-     * Display a listing of the resource (Group by Jalan).
-     * Petugas HANYA bisa melihat data yang dibuat oleh dirinya sendiri
-     */
-    public function index(Request $request)
+    
+    public function index()
     {
-        $tahun = $request->get('tahun', date('Y'));
-        $userId = Auth::id();
-
-        // Dapatkan semua jalan aktif
-        $jalanQuery = Jalan::where('is_active', true);
-
-        $jalan = $jalanQuery->orderBy('nama')->paginate(10)->withQueryString();
-
-        // Dapatkan semua kriteria aktif
-        $kriteriaList = Kriteria::where('is_active', true)->orderBy('urutan')->get();
-
-        // Group data nilai berdasarkan jalan - HANYA data milik petugas ini
-        $dataNilai = [];
-        foreach ($jalan as $j) {
-            $nilai = NilaiKriteriaJalan::where('jalan_id', $j->id)
-                ->where('tahun_penilaian', $tahun)
-                ->where('created_by', $userId) // HANYA data milik petugas ini
-                ->get();
-
-            $dataNilai[] = [
-                'jalan' => $j,
-                'nilai' => $nilai,
-                'is_complete' => $nilai->count() >= $kriteriaList->count()
-            ];
-        }
-
-        // Statistik untuk petugas (hitung berdasarkan data miliknya)
-        $totalJalan = Jalan::where('is_active', true)->count();
-        $kriteriaCount = $kriteriaList->count();
-
-        $jalanLengkap = 0;
-        $jalanBelumLengkap = 0;
-        $jalanPending = 0;
-        $jalanDivalidasi = 0;
-
-        foreach ($jalan as $j) {
-            $nilaiCount = NilaiKriteriaJalan::where('jalan_id', $j->id)
-                ->where('tahun_penilaian', $tahun)
-                ->where('created_by', $userId)
-                ->count();
-
-            $pendingCount = NilaiKriteriaJalan::where('jalan_id', $j->id)
-                ->where('tahun_penilaian', $tahun)
-                ->where('created_by', $userId)
-                ->where('status_validasi', 'pending')
-                ->count();
-
-            $divalidasiCount = NilaiKriteriaJalan::where('jalan_id', $j->id)
-                ->where('tahun_penilaian', $tahun)
-                ->where('created_by', $userId)
-                ->where('status_validasi', 'divalidasi')
-                ->count();
-
-            if ($nilaiCount >= $kriteriaCount) {
-                $jalanLengkap++;
-            } else if ($nilaiCount > 0) {
-                $jalanBelumLengkap++;
-            }
-
-            if ($pendingCount > 0) {
-                $jalanPending++;
-            }
-            if ($divalidasiCount > 0) {
-                $jalanDivalidasi++;
-            }
-        }
-
-        $statistik = [
-            'total_jalan' => $totalJalan,
-            'data_lengkap' => $jalanLengkap,
-            'belum_lengkap' => $jalanBelumLengkap,
-            'pending_validasi' => $jalanPending,
-            'sudah_divalidasi' => $jalanDivalidasi,
-            'total_nilai' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)
-                ->where('created_by', $userId)
-                ->count(),
-        ];
-
-        $tahunList = NilaiKriteriaJalan::where('created_by', $userId)
-            ->select('tahun_penilaian')
-            ->distinct()
-            ->orderBy('tahun_penilaian', 'desc')
-            ->pluck('tahun_penilaian');
-
-        if ($tahunList->isEmpty()) {
-            $tahunList = collect([date('Y')]);
-        }
-
-        return view('petugas.nilai-kriteria.index', compact('dataNilai', 'kriteriaList', 'tahun', 'statistik', 'tahunList'));
+        return redirect()->route('petugas.nilai-kriteria.create');
     }
 
     /**
@@ -139,7 +47,6 @@ class NilaiKController extends Controller
     /**
      * Store a newly created resource in storage.
      * Petugas: status selalu 'pending', menunggu validasi admin
-     * Hanya bisa menyimpan data untuk jalan yang dipilih
      */
     public function store(Request $request)
     {
@@ -166,13 +73,12 @@ class NilaiKController extends Controller
         DB::beginTransaction();
 
         try {
-            $savedCount = 0;
             foreach ($nilaiArray as $kriteriaId => $nilai) {
                 if ($nilai === null || $nilai === '') {
                     continue;
                 }
 
-                // Cek apakah data sudah ada (untuk update)
+                // Cek apakah data sudah ada
                 $existingData = NilaiKriteriaJalan::where('jalan_id', $jalanId)
                     ->where('kriteria_id', $kriteriaId)
                     ->where('tahun_penilaian', $tahun)
@@ -199,13 +105,14 @@ class NilaiKController extends Controller
                         'created_by' => $userId,
                     ]);
                 }
-                $savedCount++;
             }
 
             DB::commit();
 
-            return redirect()->route('petugas.nilai-kriteria.index', ['tahun' => $tahun])
+            // Redirect ke RIWAYAT setelah sukses
+            return redirect()->route('petugas.nilai-kriteria.riwayat', ['tahun' => $tahun])
                 ->with('success', 'Data nilai kriteria berhasil disimpan! Menunggu validasi admin.');
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error saat menyimpan nilai kriteria (Petugas):', [
@@ -222,12 +129,10 @@ class NilaiKController extends Controller
 
     /**
      * Display the specified resource.
-     * Menampilkan detail semua nilai kriteria untuk satu jalan dalam satu tahun
-     * Petugas hanya bisa melihat data miliknya sendiri
+     * Menampilkan detail semua nilai kriteria untuk satu jalan
      */
     public function show($id)
     {
-        // Cari salah satu nilai untuk mendapatkan jalan_id dan tahun
         $sampleNilai = NilaiKriteriaJalan::where('id', $id)
             ->where('created_by', Auth::id())
             ->firstOrFail();
@@ -235,23 +140,17 @@ class NilaiKController extends Controller
         $jalanId = $sampleNilai->jalan_id;
         $tahun = $sampleNilai->tahun_penilaian;
 
-        // Ambil data jalan
         $jalan = Jalan::findOrFail($jalanId);
-
-        // Ambil semua kriteria aktif
         $kriteria = Kriteria::where('is_active', true)->orderBy('urutan')->get();
 
-        // Ambil semua nilai untuk jalan dan tahun tersebut (hanya milik petugas ini)
         $nilai = NilaiKriteriaJalan::where('jalan_id', $jalanId)
             ->where('tahun_penilaian', $tahun)
             ->where('created_by', Auth::id())
             ->get()
             ->keyBy('kriteria_id');
 
-        // Hitung rata-rata nilai
         $rataRataNilai = $nilai->avg('nilai') ?? 0;
 
-        // Hitung ringkasan status
         $summary = [
             'valid' => $nilai->where('status_validasi', 'divalidasi')->count(),
             'pending' => $nilai->where('status_validasi', 'pending')->count(),
@@ -264,12 +163,9 @@ class NilaiKController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     * Edit semua nilai kriteria untuk satu jalan dalam satu tahun
-     * Petugas hanya bisa edit data miliknya sendiri
      */
     public function edit($id)
     {
-        // Cari salah satu nilai untuk mendapatkan jalan_id dan tahun (hanya milik petugas ini)
         $nilai = NilaiKriteriaJalan::where('id', $id)
             ->where('created_by', Auth::id())
             ->firstOrFail();
@@ -277,7 +173,6 @@ class NilaiKController extends Controller
         $jalanId = $nilai->jalan_id;
         $tahun = $nilai->tahun_penilaian;
 
-        // Ambil semua nilai untuk jalan dan tahun tersebut (hanya milik petugas ini)
         $existingValues = NilaiKriteriaJalan::where('jalan_id', $jalanId)
             ->where('tahun_penilaian', $tahun)
             ->where('created_by', Auth::id())
@@ -292,12 +187,9 @@ class NilaiKController extends Controller
 
     /**
      * Update the specified resource in storage.
-     * Update semua nilai kriteria untuk satu jalan dalam satu tahun
-     * Petugas hanya bisa update data miliknya sendiri
      */
     public function update(Request $request, $id)
     {
-        // Cari salah satu nilai untuk mendapatkan jalan_id dan tahun (hanya milik petugas ini)
         $nilaiLama = NilaiKriteriaJalan::where('id', $id)
             ->where('created_by', Auth::id())
             ->firstOrFail();
@@ -324,7 +216,6 @@ class NilaiKController extends Controller
 
         try {
             foreach ($nilaiArray as $kriteriaId => $nilai) {
-                // Update atau create data (hanya untuk milik petugas ini)
                 NilaiKriteriaJalan::updateOrCreate(
                     [
                         'jalan_id' => $jalanId,
@@ -344,8 +235,9 @@ class NilaiKController extends Controller
 
             DB::commit();
 
-            return redirect()->route('petugas.nilai-kriteria.index', ['tahun' => $tahun])
+            return redirect()->route('petugas.nilai-kriteria.riwayat', ['tahun' => $tahun])
                 ->with('success', 'Data nilai kriteria berhasil diperbarui! Menunggu validasi ulang dari admin.');
+
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
@@ -360,57 +252,13 @@ class NilaiKController extends Controller
      */
     public function destroy($id)
     {
-        // Petugas tidak diizinkan menghapus data
         return redirect()->back()
             ->with('error', 'Anda tidak memiliki izin untuk menghapus data. Hanya admin yang dapat menghapus data.');
     }
 
     /**
-     * Get nilai per kriteria untuk suatu jalan (untuk AJAX)
-     * Hanya mengambil data milik petugas ini
-     */
-    public function getNilaiByJalan(Request $request)
-    {
-        $jalanId = $request->get('jalan_id');
-        $tahun = $request->get('tahun', date('Y'));
-
-        $nilai = NilaiKriteriaJalan::where('jalan_id', $jalanId)
-            ->where('tahun_penilaian', $tahun)
-            ->where('created_by', Auth::id())
-            ->with('kriteria')
-            ->get()
-            ->keyBy('kriteria_id');
-
-        return response()->json($nilai);
-    }
-
-    /**
-     * Cek status validasi data untuk jalan tertentu
-     */
-    public function cekStatusValidasi(Request $request)
-    {
-        $jalanId = $request->get('jalan_id');
-        $tahun = $request->get('tahun', date('Y'));
-
-        $nilai = NilaiKriteriaJalan::where('jalan_id', $jalanId)
-            ->where('tahun_penilaian', $tahun)
-            ->where('created_by', Auth::id())
-            ->get();
-
-        $statusCount = [
-            'pending' => $nilai->where('status_validasi', 'pending')->count(),
-            'divalidasi' => $nilai->where('status_validasi', 'divalidasi')->count(),
-            'ditolak' => $nilai->where('status_validasi', 'ditolak')->count(),
-            'total' => $nilai->count(),
-            'kriteria_count' => Kriteria::where('is_active', true)->count(),
-        ];
-
-        $statusCount['is_complete'] = $statusCount['total'] >= $statusCount['kriteria_count'];
-
-        return response()->json($statusCount);
-    }
-    /**
-     * Display a listing of riwayat penilaian (all data, not grouped by road)
+     * RIWAYAT PENILAIAN - Daftar semua nilai yang sudah diinput petugas
+     * INI ADALAH HALAMAN UTAMA UNTUK PETUGAS MELIHAT HASIL INPUTNYA
      */
     public function riwayat(Request $request)
     {
@@ -446,5 +294,49 @@ class NilaiKController extends Controller
         }
 
         return view('petugas.nilai-kriteria.riwayat', compact('nilai', 'tahun', 'status', 'statistik', 'tahunList'));
+    }
+
+    /**
+     * Get nilai per kriteria untuk suatu jalan (AJAX)
+     */
+    public function getNilaiByJalan(Request $request)
+    {
+        $jalanId = $request->get('jalan_id');
+        $tahun = $request->get('tahun', date('Y'));
+
+        $nilai = NilaiKriteriaJalan::where('jalan_id', $jalanId)
+            ->where('tahun_penilaian', $tahun)
+            ->where('created_by', Auth::id())
+            ->with('kriteria')
+            ->get()
+            ->keyBy('kriteria_id');
+
+        return response()->json($nilai);
+    }
+
+    /**
+     * Cek status validasi data untuk jalan tertentu (AJAX)
+     */
+    public function cekStatusValidasi(Request $request)
+    {
+        $jalanId = $request->get('jalan_id');
+        $tahun = $request->get('tahun', date('Y'));
+
+        $nilai = NilaiKriteriaJalan::where('jalan_id', $jalanId)
+            ->where('tahun_penilaian', $tahun)
+            ->where('created_by', Auth::id())
+            ->get();
+
+        $statusCount = [
+            'pending' => $nilai->where('status_validasi', 'pending')->count(),
+            'divalidasi' => $nilai->where('status_validasi', 'divalidasi')->count(),
+            'ditolak' => $nilai->where('status_validasi', 'ditolak')->count(),
+            'total' => $nilai->count(),
+            'kriteria_count' => Kriteria::where('is_active', true)->count(),
+        ];
+
+        $statusCount['is_complete'] = $statusCount['total'] >= $statusCount['kriteria_count'];
+
+        return response()->json($statusCount);
     }
 }

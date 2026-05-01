@@ -3,9 +3,9 @@
         <a href="{{ route('petugas.dashboard') }}" class="brand">
             <div class="brand-icon">
                 @if(file_exists(public_path('images/logo-pu.png')))
-                    <img src="{{ asset('images/logo-pu.png') }}" alt="Logo PU">
+                <img src="{{ asset('images/logo-pu.png') }}" alt="Logo PU">
                 @else
-                    <i class="fas fa-road"></i>
+                <i class="fas fa-road"></i>
                 @endif
             </div>
             <div class="brand-text">
@@ -14,37 +14,37 @@
             </div>
         </a>
     </div>
-    
+
     <div class="user-card">
-    <div class="user-avatar">
-        @if(Auth::user()->foto)
+        <div class="user-avatar">
+            @if(Auth::user()->foto)
             <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto" class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover;">
-        @else
+            @else
             <div class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%); display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-weight: 700; font-size: 18px;">
                 {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
             </div>
-        @endif
-        <div class="user-details">
-            <div class="user-name">{{ Auth::user()->name ?? 'Petugas' }}</div>
-            <div class="user-role">
-                <i class="" style="font-size: 10px;"></i> 
-                @if(Auth::user()->role == 'admin')
+            @endif
+            <div class="user-details">
+                <div class="user-name">{{ Auth::user()->name ?? 'Petugas' }}</div>
+                <div class="user-role">
+                    <i class="" style="font-size: 10px;"></i>
+                    @if(Auth::user()->role == 'admin')
                     Administrator
-                @elseif(Auth::user()->role == 'petugas')
+                    @elseif(Auth::user()->role == 'petugas')
                     Petugas Lapangan
-                @else
+                    @else
                     {{ ucfirst(Auth::user()->role ?? 'Petugas') }}
-                @endif
-            </div>
-            @if(Auth::user()->nip)
+                    @endif
+                </div>
+                @if(Auth::user()->nip)
                 <div class="user-nip" style="font-size: 10px; color: #fffff; margin-top: 2px;">
                     NIP: {{ Auth::user()->nip }}
                 </div>
-            @endif
+                @endif
+            </div>
         </div>
     </div>
-</div>
-    
+
     <div class="sidebar-nav">
         <!-- Menu Utama Petugas -->
         <div class="nav-group">
@@ -58,7 +58,7 @@
                 </li>
             </ul>
         </div>
-        
+
         <!-- Data Jalan -->
         <div class="nav-group">
             <div class="nav-label">DATA JALAN</div>
@@ -71,33 +71,33 @@
                 </li>
             </ul>
         </div>
-        
+
         <div class="nav-group">
-    <div class="nav-label">PENGISIAN NILAI</div>
-    <ul class="nav-items">
-        <li class="nav-item">
-            <a href="{{ route('petugas.nilai-kriteria.index') }}" class="nav-link {{ request()->routeIs('petugas.nilai-kriteria.*') ? 'active' : '' }}">
-                <div class="nav-icon"><i class="fas fa-edit"></i></div>
-                <div class="nav-text">Input Nilai Kriteria</div>
-                @php
-                    $pendingCount = \App\Models\NilaiKriteriaJalan::where('created_by', Auth::id())
+            <div class="nav-label">PENGISIAN NILAI</div>
+            <ul class="nav-items">
+                <li class="nav-item">
+                    <a href="{{ route('petugas.nilai-kriteria.create') }}" class="nav-link {{ request()->routeIs('petugas.nilai-kriteria.create') ? 'active' : '' }}">
+                        <div class="nav-icon"><i class="fas fa-edit"></i></div>
+                        <div class="nav-text">Input Nilai Kriteria</div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('petugas.nilai-kriteria.riwayat') }}" class="nav-link {{ request()->routeIs('petugas.nilai-kriteria.riwayat') ? 'active' : '' }}">
+                        <div class="nav-icon"><i class="fas fa-history"></i></div>
+                        <div class="nav-text">Riwayat Penilaian</div>
+                        @php
+                        $pendingCount = \App\Models\NilaiKriteriaJalan::where('created_by', Auth::id())
                         ->where('status_validasi', 'pending')
                         ->count();
-                @endphp
-                @if($pendingCount > 0)
-                    <span class="nav-badge">{{ $pendingCount }}</span>
-                @endif
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('petugas.nilai-kriteria.riwayat-nilai') }}" class="nav-link {{ request()->routeIs('petugas.nilai-kriteria.riwayat-nilai') ? 'active' : '' }}">
-                <div class="nav-icon"><i class="fas fa-history"></i></div>
-                <div class="nav-text">Riwayat Penilaian</div>
-            </a>
-        </li>
-    </ul>
-</div>
-        
+                        @endphp
+                        @if($pendingCount > 0)
+                        <span class="nav-badge">{{ $pendingCount }}</span>
+                        @endif
+                    </a>
+                </li>
+            </ul>
+        </div>
+
         <!-- Informasi -->
         <div class="nav-group">
             <div class="nav-label">INFORMASI</div>
@@ -111,7 +111,7 @@
             </ul>
         </div>
     </div>
-    
+
     <div class="logout-section">
         <ul class="nav-items">
             <li class="nav-item">
@@ -122,7 +122,7 @@
             </li>
         </ul>
     </div>
-    
+
     <div class="toggle-sidebar" id="toggleSidebar">
         <i class="fas fa-chevron-left"></i>
     </div>
