@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\JalanController;
 use App\Http\Controllers\Admin\KriteriaController;
+use App\Http\Controllers\Petugas\NilaiKController;
 use App\Http\Controllers\Admin\NilaiKriteriaController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\AuthController;
@@ -90,5 +91,18 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
     Route::prefix('jalan')->name('jalan.')->group(function () {
         // Cukup tulis seperti ini, otomatis jadi petugas.jalan.index, petugas.jalan.create, dst.
         Route::resource('/', JalanPController::class)->parameters(['' => 'jalan']);
+    });
+    Route::resource('nilai-kriteria', NilaiKController::class)->names([
+        'index' => 'petugas.nilai-kriteria.index',
+        'create' => 'petugas.nilai-kriteria.create',
+        'store' => 'petugas.nilai-kriteria.store',
+        'show' => 'petugas.nilai-kriteria.show',
+        'edit' => 'petugas.nilai-kriteria.edit',
+        'update' => 'petugas.nilai-kriteria.update',
+        // 'destroy' => 'petugas.nilai-kriteria.destroy', // TIDAK ADA
+    ]);
+    Route::prefix('nilai-kriteria')->name('nilai-kriteria.')->group(function(){
+        Route::get('/get-by-jalan', [NilaiKController::class, 'getNilaiByJalan'])->name('get-by-jalan');
+        Route::get('/cek-status', [NilaiKController::class, 'cekStatusValidasi'])->name('cek-status');
     });
 });
