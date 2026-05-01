@@ -506,12 +506,14 @@ class NilaiKriteriaController extends Controller
         DB::beginTransaction();
 
         try {
+            // Step 1: Dapatkan semua nilai untuk tahun tersebut
             $nilaiKriteria = NilaiKriteriaJalan::with(['jalan', 'kriteria'])
                 ->where('tahun_penilaian', $tahun)
                 ->where('status_validasi', 'divalidasi')
                 ->get()
                 ->groupBy('jalan_id');
 
+            // Step 2: Hitung nilai max dan min untuk setiap kriteria
             $maxValues = [];
             $minValues = [];
 
@@ -522,10 +524,16 @@ class NilaiKriteriaController extends Controller
                     ->pluck('nilai')
                     ->toArray();
 
-                $maxValues[$kriteria->id] = !empty($nilaiForKriteria) ? max($nilaiForKriteria) : 1;
-                $minValues[$kriteria->id] = !empty($nilaiForKriteria) ? min($nilaiForKriteria) : 1;
+                if (!empty($nilaiForKriteria)) {
+                    $maxValues[$kriteria->id] = max($nilaiForKriteria);
+                    $minValues[$kriteria->id] = min($nilaiForKriteria);
+                } else {
+                    $maxValues[$kriteria->id] = 1;
+                    $minValues[$kriteria->id] = 1;
+                }
             }
 
+            // Step 3: Normalisasi dan hitung nilai akhir setiap alternatif
             $hasilPerhitungan = [];
             $detailPerhitungan = [];
 
@@ -537,29 +545,45 @@ class NilaiKriteriaController extends Controller
                     $nilaiItem = $nilaiItems->firstWhere('kriteria_id', $kriteria->id);
                     $nilaiAsli = $nilaiItem ? $nilaiItem->nilai : 0;
 
+                    // ==================== PERBAIKAN NORMALISASI ====================
+                    // Benefit: Rij = Xij / Max(Xj)
+                    // Cost: Rij = Min(Xj) / Xij
+
                     if ($kriteria->tipe == 'benefit') {
-                        $nilaiNormalisasi = $maxValues[$kriteria->id] > 0
-                            ? $nilaiAsli / $maxValues[$kriteria->id]
-                            : 0;
+                        // Benefit: nilai / max
+                        if ($maxValues[$kriteria->id] > 0) {
+                            $nilaiNormalisasi = $nilaiAsli / $maxValues[$kriteria->id];
+                        } else {
+                            $nilaiNormalisasi = 0;
+                        }
                     } else {
-                        $nilaiNormalisasi = $nilaiAsli > 0
-                            ? $minValues[$kriteria->id] / $nilaiAsli
-                            : 0;
+                        // Cost: min / nilai
+                        if ($nilaiAsli > 0) {
+                            $nilaiNormalisasi = $minValues[$kriteria->id] / $nilaiAsli;
+                        } else {
+                            $nilaiNormalisasi = 0;
+                        }
                     }
 
+                    // Simpan nilai ternormalisasi ke database (opsional)
                     if ($nilaiItem) {
                         $nilaiItem->update(['nilai_ternormalisasi' => $nilaiNormalisasi]);
                     }
 
+                    // Hitung kontribusi bobot
                     $kontribusi = $nilaiNormalisasi * $kriteria->bobot;
                     $skorAkhir += $kontribusi;
 
                     $detail[] = [
                         'kriteria_id' => $kriteria->id,
                         'kriteria_nama' => $kriteria->nama,
+                        'kriteria_tipe' => $kriteria->tipe,
                         'nilai_asli' => $nilaiAsli,
+                        'nilai_max' => $maxValues[$kriteria->id],
+                        'nilai_min' => $minValues[$kriteria->id],
                         'nilai_normalisasi' => round($nilaiNormalisasi, 6),
                         'bobot' => $kriteria->bobot,
+                        'bobot_persen' => $kriteria->bobot * 100,
                         'kontribusi' => round($kontribusi, 6),
                     ];
                 }
@@ -568,8 +592,10 @@ class NilaiKriteriaController extends Controller
                 $detailPerhitungan[$jalanId] = $detail;
             }
 
+            // Step 4: Urutkan berdasarkan skor tertinggi (ranking)
             arsort($hasilPerhitungan);
 
+            // Step 5: Simpan hasil ke tabel hasil_saw
             HasilSaw::where('tahun_perhitungan', $tahun)->delete();
 
             $ranking = 1;
@@ -750,19 +776,19 @@ class NilaiKriteriaController extends Controller
 
         return Excel::download($export, 'Nilai_Kriteria_Per_Jalan_' . $tahun . '_' . date('Ymd_His') . '.xlsx');
     }
-/**
- * Get all pending IDs for a specific road and year (untuk validasi massal)
- */
-public function getPendingIds(Request $request)
-{
-    $jalanId = $request->get('jalan_id');
-    $tahun = $request->get('tahun', date('Y'));
-    
-    $ids = NilaiKriteriaJalan::where('jalan_id', $jalanId)
-        ->where('tahun_penilaian', $tahun)
-        ->where('status_validasi', 'pending')
-        ->pluck('id');
-    
-    return response()->json(['ids' => $ids]);
-}
+    /**
+     * Get all pending IDs for a specific road and year (untuk validasi massal)
+     */
+    public function getPendingIds(Request $request)
+    {
+        $jalanId = $request->get('jalan_id');
+        $tahun = $request->get('tahun', date('Y'));
+
+        $ids = NilaiKriteriaJalan::where('jalan_id', $jalanId)
+            ->where('tahun_penilaian', $tahun)
+            ->where('status_validasi', 'pending')
+            ->pluck('id');
+
+        return response()->json(['ids' => $ids]);
+    }
 }

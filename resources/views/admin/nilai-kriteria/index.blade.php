@@ -12,7 +12,7 @@
         <a href="{{ route('admin.nilai-kriteria.create') }}" class="btn-primary">
             <i class="fas fa-plus"></i> Input Nilai Baru
         </a>
-        <a href="#" class="btn-saw">
+        <a href="{{ route('admin.saw.form', ['tahun' => request('tahun', date('Y'))]) }}" class="btn-saw">
             <i class="fas fa-calculator"></i> Proses SAW
         </a>
         

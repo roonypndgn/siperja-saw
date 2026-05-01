@@ -78,6 +78,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('export/per-jalan-excel', [NilaiKriteriaController::class, 'exportPerJalanExcel'])->name('export-per-jalan-excel');
         Route::get('/get-pending-ids', [NilaiKriteriaController::class, 'getPendingIds'])->name('get-pending-ids');
     });
+    Route::prefix('saw')->name('saw.')->group(function () {
+        Route::get('/form', [NilaiKriteriaController::class, 'sawForm'])->name('form');
+        Route::post('/process', [NilaiKriteriaController::class, 'sawProcess'])->name('process');
+    });
+    Route::prefix('hasil-saw')->name('hasil-saw.')->group(function () {
+        Route::get('/', [NilaiKriteriaController::class, 'hasilSaw'])->name('index');
+        Route::get('/{id}', [NilaiKriteriaController::class, 'hasilSawDetail'])->name('show');
+        Route::get('/export/{tahun}', [NilaiKriteriaController::class, 'exportHasilSaw'])->name('export');
+    });
 });
 
 
