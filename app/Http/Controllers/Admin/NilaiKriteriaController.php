@@ -2,13 +2,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\HasilSaw;
 use App\Models\Jalan;
 use App\Models\Kriteria;
 use App\Models\NilaiKriteriaJalan;
-use App\Models\HasilSaw;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class NilaiKriteriaController extends Controller
@@ -17,46 +18,42 @@ class NilaiKriteriaController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-{
-    $tahun = $request->get('tahun', date('Y'));
-    $status = $request->get('status', 'semua'); // Ubah default menjadi 'semua'
-    
-    // Debug: cek total data di database
-    $totalData = NilaiKriteriaJalan::count();
-    \Log::info('Total data nilai_kriteria_jalans: ' . $totalData);
-    
-    $nilai = NilaiKriteriaJalan::with(['jalan', 'kriteria', 'createdBy', 'validatedBy'])
-        ->where('tahun_penilaian', $tahun)
-        ->when($status != 'semua', function($query) use ($status) {
-            $query->where('status_validasi', $status);
-        })
-        ->orderBy('created_at', 'desc')
-        ->paginate(20)
-        ->withQueryString();
-    
-    // Debug: cek jumlah data yang ditemukan
-    \Log::info('Data ditemukan untuk tahun ' . $tahun . ': ' . $nilai->total());
-    
-    // Statistik
-    $statistik = [
-        'total' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->count(),
-        'pending' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'pending')->count(),
-        'divalidasi' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'divalidasi')->count(),
-        'ditolak' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'ditolak')->count(),
-    ];
-    
-    $tahunList = NilaiKriteriaJalan::select('tahun_penilaian')
-        ->distinct()
-        ->orderBy('tahun_penilaian', 'desc')
-        ->pluck('tahun_penilaian');
-    
-    // Jika tahunList kosong, tambahkan tahun ini
-    if ($tahunList->isEmpty()) {
-        $tahunList = collect([date('Y')]);
+    {
+        $tahun = $request->get('tahun', date('Y'));
+        $status = $request->get('status', 'semua');
+        
+        // Debug: cek total data di database
+        $totalData = NilaiKriteriaJalan::count();
+        Log::info('Total data nilai_kriteria_jalans: ' . $totalData);
+        
+        $nilai = NilaiKriteriaJalan::with(['jalan', 'kriteria', 'createdBy', 'validatedBy'])
+            ->where('tahun_penilaian', $tahun)
+            ->when($status != 'semua', function($query) use ($status) {
+                $query->where('status_validasi', $status);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->withQueryString();
+        
+        // Statistik
+        $statistik = [
+            'total' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->count(),
+            'pending' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'pending')->count(),
+            'divalidasi' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'divalidasi')->count(),
+            'ditolak' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)->where('status_validasi', 'ditolak')->count(),
+        ];
+        
+        $tahunList = NilaiKriteriaJalan::select('tahun_penilaian')
+            ->distinct()
+            ->orderBy('tahun_penilaian', 'desc')
+            ->pluck('tahun_penilaian');
+        
+        if ($tahunList->isEmpty()) {
+            $tahunList = collect([date('Y')]);
+        }
+        
+        return view('admin.nilai-kriteria.index', compact('nilai', 'tahun', 'status', 'statistik', 'tahunList'));
     }
-    
-    return view('admin.nilai-kriteria.index', compact('nilai', 'tahun', 'status', 'statistik', 'tahunList'));
-}
     
     /**
      * Show the form for creating a new resource.
@@ -83,20 +80,20 @@ class NilaiKriteriaController extends Controller
     
     /**
      * Store a newly created resource in storage.
+     * Jika Admin yang input, langsung tervalidasi
+     * Jika Petugas yang input, status pending
      */
     public function store(Request $request)
     {
-        // HAPUS validasi min:0|max:100, biarkan nilai bebas
         $validator = Validator::make($request->all(), [
             'jalan_id' => 'required|exists:jalans,id',
             'tahun_penilaian' => 'required|integer|min:2000|max:' . (date('Y') + 1),
             'nilai' => 'required|array',
-            'nilai.*' => 'required|numeric', // Hanya required|numeric, tanpa batasan
+            'nilai.*' => 'required|numeric',
             'catatan' => 'nullable|string',
         ]);
         
         if ($validator->fails()) {
-            // Tampilkan error detail untuk debugging
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
@@ -107,20 +104,20 @@ class NilaiKriteriaController extends Controller
         $tahun = $request->tahun_penilaian;
         $nilaiArray = $request->nilai;
         
-        // Debug: cek data yang masuk
-        \Log::info('Data yang disimpan:', [
-            'jalan_id' => $jalanId,
-            'tahun' => $tahun,
-            'nilai' => $nilaiArray,
-            'user_id' => Auth::id()
-        ]);
+        // Cek role user
+        $user = Auth::user();
+        $isAdmin = $user->role === 'admin';
+        
+        // Jika admin, status langsung divalidasi
+        $status = $isAdmin ? 'divalidasi' : 'pending';
+        $validatedBy = $isAdmin ? $user->id : null;
+        $validatedAt = $isAdmin ? now() : null;
         
         DB::beginTransaction();
         
         try {
             $savedCount = 0;
             foreach ($nilaiArray as $kriteriaId => $nilai) {
-                // Pastikan nilai tidak null
                 if ($nilai === null || $nilai === '') {
                     continue;
                 }
@@ -134,8 +131,10 @@ class NilaiKriteriaController extends Controller
                     [
                         'nilai' => $nilai,
                         'catatan' => $request->catatan,
-                        'status_validasi' => 'pending',
-                        'created_by' => Auth::id(),
+                        'status_validasi' => $status,
+                        'created_by' => $user->id,
+                        'validated_by' => $validatedBy,
+                        'validated_at' => $validatedAt,
                     ]
                 );
                 $savedCount++;
@@ -143,14 +142,16 @@ class NilaiKriteriaController extends Controller
             
             DB::commit();
             
-            \Log::info('Data berhasil disimpan', ['count' => $savedCount]);
+            $message = $isAdmin 
+                ? 'Data nilai kriteria berhasil disimpan dan sudah tervalidasi!' 
+                : 'Data nilai kriteria berhasil disimpan! Menunggu validasi admin.';
             
             return redirect()->route('admin.nilai-kriteria.index', ['tahun' => $tahun])
-                ->with('success', 'Data nilai kriteria berhasil disimpan! Menunggu validasi admin.');
+                ->with('success', $message);
                 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error saat menyimpan nilai kriteria:', [
+            Log::error('Error saat menyimpan nilai kriteria:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -193,7 +194,7 @@ class NilaiKriteriaController extends Controller
         $nilai = NilaiKriteriaJalan::findOrFail($id);
         
         $validator = Validator::make($request->all(), [
-            'nilai' => 'required|numeric|min:0|max:100',
+            'nilai' => 'required|numeric',
             'catatan' => 'nullable|string',
         ]);
         
@@ -203,16 +204,28 @@ class NilaiKriteriaController extends Controller
                 ->withInput();
         }
         
+        $user = Auth::user();
+        $isAdmin = $user->role === 'admin';
+        
+        // Jika admin, langsung tervalidasi
+        $status = $isAdmin ? 'divalidasi' : 'pending';
+        $validatedBy = $isAdmin ? $user->id : null;
+        $validatedAt = $isAdmin ? now() : null;
+        
         $nilai->update([
             'nilai' => $request->nilai,
             'catatan' => $request->catatan,
-            'status_validasi' => 'pending',
-            'validated_by' => null,
-            'validated_at' => null,
+            'status_validasi' => $status,
+            'validated_by' => $validatedBy,
+            'validated_at' => $validatedAt,
         ]);
         
+        $message = $isAdmin 
+            ? 'Data nilai berhasil diperbarui dan sudah tervalidasi!' 
+            : 'Data nilai berhasil diperbarui! Menunggu validasi ulang.';
+        
         return redirect()->route('admin.nilai-kriteria.index')
-            ->with('success', 'Data nilai berhasil diperbarui! Menunggu validasi ulang.');
+            ->with('success', $message);
     }
     
     /**
@@ -227,43 +240,44 @@ class NilaiKriteriaController extends Controller
             ->with('success', 'Data nilai berhasil dihapus!');
     }
     
-/**
- * Validasi data nilai (Admin only)
- */
-public function validateData(Request $request, $id)
-{
-    $nilai = NilaiKriteriaJalan::findOrFail($id);
-    
-    $validator = Validator::make($request->all(), [
-        'status' => 'required|in:divalidasi,ditolak',
-        'catatan_validasi' => 'nullable|string',
-    ]);
-    
-    if ($validator->fails()) {
-        if ($request->ajax()) {
-            return response()->json(['error' => $validator->errors()], 422);
+    /**
+     * Validasi data nilai (Admin only)
+     * Method ini tetap ada untuk memvalidasi data dari Petugas
+     */
+    public function validateData(Request $request, $id)
+    {
+        $nilai = NilaiKriteriaJalan::findOrFail($id);
+        
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:divalidasi,ditolak',
+            'catatan_validasi' => 'nullable|string',
+        ]);
+        
+        if ($validator->fails()) {
+            if ($request->ajax()) {
+                return response()->json(['error' => $validator->errors()], 422);
+            }
+            return redirect()->back()->withErrors($validator);
         }
-        return redirect()->back()->withErrors($validator);
+        
+        $nilai->update([
+            'status_validasi' => $request->status,
+            'validated_by' => Auth::id(),
+            'validated_at' => now(),
+            'catatan' => $request->catatan_validasi ?? $nilai->catatan,
+        ]);
+        
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+        
+        $message = $request->status == 'divalidasi' 
+            ? 'Data nilai berhasil divalidasi!' 
+            : 'Data nilai ditolak. Silakan input ulang.';
+        
+        return redirect()->route('admin.nilai-kriteria.index')
+            ->with('success', $message);
     }
-    
-    $nilai->update([
-        'status_validasi' => $request->status,
-        'validated_by' => Auth::id(),
-        'validated_at' => now(),
-        'catatan' => $request->catatan_validasi ?? $nilai->catatan,
-    ]);
-    
-    if ($request->ajax()) {
-        return response()->json(['success' => true]);
-    }
-    
-    $message = $request->status == 'divalidasi' 
-        ? 'Data nilai berhasil divalidasi!' 
-        : 'Data nilai ditolak. Silakan input ulang.';
-    
-    return redirect()->route('admin.nilai-kriteria.index')
-        ->with('success', $message);
-}
     
     /**
      * Validasi massal (Admin only)
@@ -291,7 +305,6 @@ public function validateData(Request $request, $id)
     
     /**
      * ==================== METODE SAW ====================
-     * Proses perhitungan SAW untuk menentukan prioritas perbaikan jalan
      */
     
     /**
@@ -301,10 +314,8 @@ public function validateData(Request $request, $id)
     {
         $tahun = $request->get('tahun', date('Y'));
         
-        // Cek apakah sudah ada hasil perhitungan untuk tahun ini
         $existingResult = HasilSaw::where('tahun_perhitungan', $tahun)->exists();
         
-        // Statistik data yang siap dihitung
         $statistik = [
             'total_jalan' => Jalan::where('is_active', true)->count(),
             'sudah_dinilai' => NilaiKriteriaJalan::where('tahun_penilaian', $tahun)
@@ -326,7 +337,6 @@ public function validateData(Request $request, $id)
     {
         $tahun = $request->get('tahun', date('Y'));
         
-        // Validasi data sebelum proses
         $kriteriaAktif = Kriteria::where('is_active', true)->get();
         $jalanAktif = Jalan::where('is_active', true)->get();
         
@@ -356,14 +366,12 @@ public function validateData(Request $request, $id)
         DB::beginTransaction();
         
         try {
-            // Step 1: Dapatkan semua nilai untuk tahun tersebut
             $nilaiKriteria = NilaiKriteriaJalan::with(['jalan', 'kriteria'])
                 ->where('tahun_penilaian', $tahun)
                 ->where('status_validasi', 'divalidasi')
                 ->get()
                 ->groupBy('jalan_id');
             
-            // Step 2: Hitung nilai max dan min untuk setiap kriteria (untuk normalisasi)
             $maxValues = [];
             $minValues = [];
             
@@ -378,7 +386,6 @@ public function validateData(Request $request, $id)
                 $minValues[$kriteria->id] = !empty($nilaiForKriteria) ? min($nilaiForKriteria) : 1;
             }
             
-            // Step 3: Normalisasi dan hitung nilai akhir setiap alternatif
             $hasilPerhitungan = [];
             $detailPerhitungan = [];
             
@@ -390,25 +397,20 @@ public function validateData(Request $request, $id)
                     $nilaiItem = $nilaiItems->firstWhere('kriteria_id', $kriteria->id);
                     $nilaiAsli = $nilaiItem ? $nilaiItem->nilai : 0;
                     
-                    // Normalisasi berdasarkan tipe kriteria
                     if ($kriteria->tipe == 'benefit') {
-                        // Benefit: nilai / max
                         $nilaiNormalisasi = $maxValues[$kriteria->id] > 0 
                             ? $nilaiAsli / $maxValues[$kriteria->id] 
                             : 0;
                     } else {
-                        // Cost: min / nilai
                         $nilaiNormalisasi = $nilaiAsli > 0 
                             ? $minValues[$kriteria->id] / $nilaiAsli 
                             : 0;
                     }
                     
-                    // Simpan nilai ternormalisasi ke database
                     if ($nilaiItem) {
                         $nilaiItem->update(['nilai_ternormalisasi' => $nilaiNormalisasi]);
                     }
                     
-                    // Hitung kontribusi bobot
                     $kontribusi = $nilaiNormalisasi * $kriteria->bobot;
                     $skorAkhir += $kontribusi;
                     
@@ -426,11 +428,8 @@ public function validateData(Request $request, $id)
                 $detailPerhitungan[$jalanId] = $detail;
             }
             
-            // Step 4: Urutkan berdasarkan skor tertinggi (ranking)
             arsort($hasilPerhitungan);
             
-            // Step 5: Simpan hasil ke tabel hasil_saw
-            // Hapus hasil lama untuk tahun yang sama
             HasilSaw::where('tahun_perhitungan', $tahun)->delete();
             
             $ranking = 1;
@@ -471,7 +470,6 @@ public function validateData(Request $request, $id)
             ->orderBy('peringkat', 'asc')
             ->paginate(20);
         
-        // Statistik perhitungan
         $statistik = [
             'total_jalan' => $hasil->total(),
             'rata_rata_skor' => HasilSaw::where('tahun_perhitungan', $tahun)->avg('skor_akhir'),
@@ -498,45 +496,6 @@ public function validateData(Request $request, $id)
         $detailPerhitungan = json_decode($hasil->detail_perhitungan, true);
         
         return view('admin.hasil-saw.show', compact('hasil', 'detailPerhitungan'));
-    }
-    
-    /**
-     * Export hasil SAW ke PDF
-     */
-    public function exportHasilSaw($tahun)
-    {
-        $hasil = HasilSaw::with(['jalan'])
-            ->where('tahun_perhitungan', $tahun)
-            ->orderBy('peringkat', 'asc')
-            ->get();
-        
-        $pdf = PDF::loadView('admin.hasil-saw.pdf', compact('hasil', 'tahun'));
-        return $pdf->download('Hasil_SAW_' . $tahun . '.pdf');
-    }
-    
-    /**
-     * Cek kelengkapan data per jalan (untuk AJAX)
-     */
-    public function cekKelengkapan(Request $request)
-    {
-        $jalanId = $request->get('jalan_id');
-        $tahun = $request->get('tahun', date('Y'));
-        
-        $kriteriaCount = Kriteria::where('is_active', true)->count();
-        $nilaiCount = NilaiKriteriaJalan::where('jalan_id', $jalanId)
-            ->where('tahun_penilaian', $tahun)
-            ->where('status_validasi', 'divalidasi')
-            ->count();
-        
-        $isComplete = $nilaiCount >= $kriteriaCount;
-        $missingCount = $kriteriaCount - $nilaiCount;
-        
-        return response()->json([
-            'is_complete' => $isComplete,
-            'missing_count' => $missingCount,
-            'total_kriteria' => $kriteriaCount,
-            'nilai_count' => $nilaiCount,
-        ]);
     }
     
     /**
