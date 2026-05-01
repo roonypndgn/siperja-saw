@@ -124,7 +124,7 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
         Route::get('/riwayat-penilaian', [PanduanController::class, 'riwayatPenilaian'])->name('riwayat-penilaian');
         Route::get('/faq', [PanduanController::class, 'faq'])->name('faq');
     });
-    Route::prefix('profil')->name('petugas.profil.')->group(function () {
+    Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [ProfilController::class, 'index'])->name('index');
         Route::get('/edit', [ProfilController::class, 'edit'])->name('edit');
         Route::put('/update', [ProfilController::class, 'update'])->name('update');

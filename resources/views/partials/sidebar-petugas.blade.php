@@ -15,35 +15,41 @@
         </a>
     </div>
 
-    <div class="user-card">
-        <div class="user-avatar">
+<div class="user-card">
+    <a href="{{ route('petugas.profil.index') }}" style="text-decoration: none; display: block; color: inherit;">
+        <div class="user-avatar" style="display: flex; align-items: center; gap: 12px;">
             @if(Auth::user()->foto)
-            <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto" class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover;">
+                <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto" class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover;">
             @else
-            <div class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%); display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-weight: 700; font-size: 18px;">
-                {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
-            </div>
+                <div class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%); display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-weight: 700; font-size: 18px;">
+                    {{ strtoupper(substr(Auth::user()->name ?? 'P', 0, 1)) }}
+                </div>
             @endif
-            <div class="user-details">
-                <div class="user-name">{{ Auth::user()->name ?? 'Petugas' }}</div>
-                <div class="user-role">
-                    <i class="" style="font-size: 10px;"></i>
+            <div class="user-details" style="flex: 1;">
+                <div class="user-name" style="font-weight: 600; color: white;">{{ Auth::user()->name ?? 'Petugas' }}</div>
+                <div class="user-role" style="font-size: 11px; color: #F9A826; margin-top: 2px;">
+                    <i class="fas fa-user-check" style="font-size: 10px; margin-right: 4px;"></i>
                     @if(Auth::user()->role == 'admin')
-                    Administrator
+                        Administrator
                     @elseif(Auth::user()->role == 'petugas')
-                    Petugas Lapangan
+                        Petugas Lapangan
                     @else
-                    {{ ucfirst(Auth::user()->role ?? 'Petugas') }}
+                        {{ ucfirst(Auth::user()->role ?? 'Petugas') }}
                     @endif
                 </div>
                 @if(Auth::user()->nip)
-                <div class="user-nip" style="font-size: 10px; color: #fffff; margin-top: 2px;">
+                <div class="user-nip" style="font-size: 10px; color: #8BA3BC; margin-top: 2px;">
+                    <i class="fas fa-id-card" style="font-size: 9px; margin-right: 3px;"></i>
                     NIP: {{ Auth::user()->nip }}
                 </div>
                 @endif
             </div>
+            <div class="user-link-icon" style="color: #8BA3BC;">
+                <i class="fas fa-chevron-right" style="font-size: 12px;"></i>
+            </div>
         </div>
-    </div>
+    </a>
+</div>
 
     <div class="sidebar-nav">
         <!-- Menu Utama Petugas -->
