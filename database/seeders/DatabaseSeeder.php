@@ -13,8 +13,8 @@ class DatabaseSeeder extends Seeder
     {
         // Buat user admin
         User::create([
-            'name' => 'Hartono, M.Kom',
-            'email' => 'admin@mail.com',
+            'name' => 'Ronny Hartono Pandiangan, S. Kom, M.Kom',
+            'email' => 'pandianganronny@gmail.com',
             'nip' => '223520043',
             'password' => Hash::make('password'),
             'role' => 'admin',
@@ -22,9 +22,16 @@ class DatabaseSeeder extends Seeder
 
         // Buat user petugas
         User::create([
-            'name' => 'Ir. Ronny Pandiangan',
-            'email' => 'petugas@mail.com',
-            'nip' => '2235200433',
+            'name' => 'Jetli Rikardo Manik, S.Kom',
+            'email' => 'jetli@gmail.com',
+            'nip' => '223520053',
+            'password' => Hash::make('password'),
+            'role' => 'petugas',
+        ]);
+        User::create([
+            'name' => 'Risto Siregar, S.Kom',
+            'email' => 'risto@gmail.com',
+            'nip' => '223520041',
             'password' => Hash::make('password'),
             'role' => 'petugas',
         ]);

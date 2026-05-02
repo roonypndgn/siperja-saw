@@ -1,4 +1,3 @@
-{{-- resources/views/admin/dashboard.blade.php --}}
 @extends('layouts.admin')
 
 @section('title', 'Dashboard - Admin')
@@ -8,38 +7,52 @@
 @section('content')
 <div class="dashboard-container">
     
-    <!-- Filter Tahun -->
-    <div class="filter-bar" style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
-        <form method="GET" action="{{ route('admin.dashboard') }}">
-            <select name="tahun" class="filter-select" onchange="this.form.submit()" style="padding: 8px 16px; border: 1px solid #E2E8F0; border-radius: 10px; background: white; cursor: pointer;">
-                @for($year = date('Y'); $year >= date('Y')-5; $year--)
-                    <option value="{{ $year }}" {{ $tahun == $year ? 'selected' : '' }}>Tahun {{ $year }}</option>
-                @endfor
-            </select>
-        </form>
-    </div>
-    
-    <!-- Welcome Card -->
-    <div class="welcome-card" style="background: linear-gradient(135deg, #1A2A3A 0%, #2A3F54 100%); border-radius: 20px; padding: 30px; margin-bottom: 30px;">
+    <!-- Welcome Card - Soft Modern -->
+    <div class="welcome-card" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border-radius: 24px; padding: 32px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
             <div>
-                <h2 style="color: white; margin-bottom: 8px; font-size: 24px;">
-                    <i class="fas fa-chart-line"></i> Sistem Prioritas Perbaikan Jalan
-                </h2>
-                <p style="color: #8BA3BC; margin: 0;">Dinas Pekerjaan Umum dan Penataan Ruang</p>
-                <div style="margin-top: 16px;">
-                    <span style="background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 12px; color: #F9A826;">
-                        <i class="fas fa-calendar"></i> Periode: {{ $tahun }}
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 55px; height: 55px; background: linear-gradient(135deg, #F9A826, #E8912A); border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 15px rgba(249, 168, 38, 0.3);">
+                        <i class="fas fa-hands-helping" style="color: #1A2A3A; font-size: 26px;"></i>
+                    </div>
+                    <div>
+                        <h2 style="color: white; margin: 0; font-size: 22px;">Selamat Datang, {{ Auth::user()->name }}!</h2>
+                        <p style="color: #94A3B8; margin: 4px 0 0;">Sistem Prioritas Perbaikan Jalan - Dinas PUPR</p>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; margin-left: 69px;">
+                    <span style="background: rgba(249, 168, 38, 0.15); padding: 6px 14px; border-radius: 25px; font-size: 13px; color: #F9A826;">
+                        <i class="fas fa-calendar-alt"></i> {{ now()->translatedFormat('l, d F Y') }}
                     </span>
                 </div>
             </div>
             <div style="text-align: center;">
-                <div style="background: #F9A826; border-radius: 16px; padding: 15px 25px;">
-                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #1A2A3A;">Progress Data</div>
-                    <div style="font-size: 36px; font-weight: 800; color: #1A2A3A;">{{ $progress_kelengkapan['persen'] }}%</div>
-                    <div style="font-size: 11px; color: #1A2A3A;">{{ $progress_kelengkapan['lengkap'] }}/{{ $progress_kelengkapan['total'] }} Jalan Lengkap</div>
+                <div style="background: linear-gradient(135deg, #F9A826, #E8912A); border-radius: 20px; padding: 20px 28px; min-width: 200px;">
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #1A2A3A; font-weight: 600;">Progress Data</div>
+                    <div style="font-size: 38px; font-weight: 800; color: #1A2A3A;">{{ $progress_kelengkapan['persen'] }}%</div>
+                    <div style="font-size: 11px; color: #1A2A3A; font-weight: 500;">{{ $progress_kelengkapan['lengkap'] }}/{{ $progress_kelengkapan['total'] }} Jalan</div>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Filter Tahun - Ditempatkan di atas statistik cards dengan layout yang lebih baik -->
+    <div class="filter-section" style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 24px;">
+        <div class="filter-wrapper" style="display: inline-flex; align-items: center; background: white; border-radius: 40px; border: 1px solid #E2E8F0; padding: 4px 4px 4px 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 28px; height: 28px; background: #FEF3E0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-calendar-alt" style="color: #F9A826; font-size: 12px;"></i>
+                </div>
+                <span style="font-size: 13px; color: #6B7280;">Tahun</span>
+            </div>
+            <form method="GET" action="{{ route('admin.dashboard') }}" style="margin: 0;">
+                <select name="tahun" onchange="this.form.submit()" style="padding: 8px 32px 8px 12px; border: none; background: transparent; font-size: 14px; font-weight: 600; color: #1A2A3A; cursor: pointer; outline: none; appearance: none;">
+                    @for($year = date('Y'); $year >= date('Y')-5; $year--)
+                        <option value="{{ $year }}" {{ $tahun == $year ? 'selected' : '' }}>{{ $year }}</option>
+                    @endfor
+                </select>
+            </form>
+            <i class="fas fa-chevron-down" style="color: #F9A826; font-size: 12px; margin-right: 12px; pointer-events: none;"></i>
         </div>
     </div>
     
