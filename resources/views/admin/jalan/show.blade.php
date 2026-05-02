@@ -263,7 +263,7 @@
                 </div>
                 <div class="saw-date">
                     <div class="date-label">Tanggal Perhitungan</div>
-                    <div class="date-value">{{ \Carbon\Carbon::parse($hasilSaw->tanggal_perhitungan)->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</div>
+                    <div class="date-value">{{ $hasilSaw->tanggal_perhitungan->translatedFormat('d F Y') }}</div>
                 </div>
                 <div class="saw-user">
                     <div class="user-label">Dihitung Oleh</div>
@@ -272,11 +272,79 @@
             </div>
             
             @if($hasilSaw->detail_perhitungan)
-            <details class="detail-calculation">
-                <summary><i class="fas fa-calculator"></i> Lihat Detail Perhitungan</summary>
-                <pre class="calculation-detail">{{ json_encode($hasilSaw->detail_perhitungan, JSON_PRETTY_PRINT) }}</pre>
-            </details>
-            @endif
+<div class="calculation-section" style="margin-top: 24px;">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #F9A826;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 700;">
+            <i class="fas fa-calculator" style="color: #F9A826;"></i> Detail Perhitungan SAW
+        </h3>
+        <button onclick="toggleDetailPerhitungan()" class="btn-toggle" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 6px 12px; cursor: pointer;">
+            <i class="fas fa-eye"></i> Tampilkan Detail
+        </button>
+    </div>
+    
+    <div id="detailPerhitungan" style="display: none;">
+        @php
+            $detailPerhitungan = json_decode($hasilSaw->detail_perhitungan, true);
+            $total = 0;
+        @endphp
+        
+        <div class="calculation-grid" style="display: grid; gap: 12px; margin-bottom: 20px;">
+            @foreach($detailPerhitungan as $item)
+            <div class="calculation-item" style="background: #F8FAFC; border-radius: 12px; padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div style="flex: 2;">
+                        <div style="font-weight: 700; margin-bottom: 4px;">{{ $item['kriteria_nama'] }}</div>
+                        <div style="font-size: 12px; color: #6B7280;">
+                            <span style="margin-right: 16px;">Nilai: <strong>{{ number_format($item['nilai_asli'], 2) }}</strong></span>
+                            <span>Bobot: <strong>{{ number_format($item['bobot'] * 100, 0) }}%</strong></span>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 11px; color: #6B7280;">Normalisasi</div>
+                        <div style="font-weight: 700; color: #F9A826;">{{ number_format($item['nilai_normalisasi'], 4) }}</div>
+                    </div>
+                    <div style="flex: 1; text-align: right;">
+                        <div style="font-size: 11px; color: #6B7280;">Kontribusi</div>
+                        <div style="font-weight: 700;">{{ number_format($item['kontribusi'], 4) }}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <div style="background: #E2E8F0; border-radius: 10px; height: 6px;">
+                        <div style="width: {{ $item['nilai_normalisasi'] * 100 }}%; background: #F9A826; height: 6px; border-radius: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+            @php $total += $item['kontribusi']; @endphp
+            @endforeach
+        </div>
+        
+        <div class="calculation-total" style="background: linear-gradient(135deg, #F9A826, #E8912A); border-radius: 12px; padding: 16px; text-align: center;">
+            <div style="font-size: 14px; font-weight: 600; color: #1A2A3A;">TOTAL SKOR AKHIR (V)</div>
+            <div style="font-size: 28px; font-weight: 800; color: #1A2A3A;">{{ number_format($total, 4) }}</div>
+            <div style="font-size: 11px; color: #1A2A3A;">Semakin tinggi skor, semakin prioritas jalan tersebut</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let detailVisible = false;
+    
+    function toggleDetailPerhitungan() {
+        const detailDiv = document.getElementById('detailPerhitungan');
+        const btn = document.querySelector('.btn-toggle');
+        
+        if (detailVisible) {
+            detailDiv.style.display = 'none';
+            btn.innerHTML = '<i class="fas fa-eye"></i> Tampilkan Detail';
+            detailVisible = false;
+        } else {
+            detailDiv.style.display = 'block';
+            btn.innerHTML = '<i class="fas fa-eye-slash"></i> Sembunyikan Detail';
+            detailVisible = true;
+        }
+    }
+</script>
+@endif
         </div>
     </div>
     @endif

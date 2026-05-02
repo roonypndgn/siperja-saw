@@ -606,7 +606,7 @@ class NilaiKriteriaController extends Controller
                     'peringkat' => $ranking,
                     'tahun_perhitungan' => $tahun,
                     'detail_perhitungan' => json_encode($detailPerhitungan[$jalanId]),
-                    'tanggal_perhitungan' => now(),
+                    'tanggal_perhitungan' => \Carbon\Carbon::now('Asia/Jakarta'),
                     'dihitung_oleh' => Auth::id(),
                 ]);
                 $ranking++;
