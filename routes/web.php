@@ -87,6 +87,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/{id}', [NilaiKriteriaController::class, 'hasilSawDetail'])->name('show');
         Route::get('/export/hasil-saw-pdf/{tahun}', [NilaiKriteriaController::class, 'exportHasilSaw'])->name('exports-hasil-saw-pdf');
     });
+    Route::prefix('profil')->name('profil.')->group(function () {
+        Route::get('/', [ProfilController::class, 'index'])->name('index');
+        Route::get('/edit', [ProfilController::class, 'edit'])->name('edit');
+        Route::put('/update', [ProfilController::class, 'update'])->name('update');
+        Route::get('/change-password', [ProfilController::class, 'changePasswordForm'])->name('change-password');
+        Route::post('/update-password', [ProfilController::class, 'updatePassword'])->name('update-password');
+        Route::delete('/remove-foto', [ProfilController::class, 'removeFoto'])->name('remove-foto');
+    });
 });
 
 
