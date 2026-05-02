@@ -11,7 +11,7 @@
         <a href="{{ route('admin.saw.form') }}" class="btn-primary">
             <i class="fas fa-calculator"></i> Hitung Ulang SAW
         </a>
-        <a href="{{ route('admin.hasil-saw.export', $tahun) }}" class="btn-secondary">
+        <a href="{{ route('admin.hasil-saw.exports-hasil-saw-pdf', $tahun) }}" class="btn-secondary">
             <i class="fas fa-file-pdf"></i> Export PDF
         </a>
     </div>

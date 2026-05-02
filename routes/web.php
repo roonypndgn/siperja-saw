@@ -85,7 +85,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::prefix('hasil-saw')->name('hasil-saw.')->group(function () {
         Route::get('/', [NilaiKriteriaController::class, 'hasilSaw'])->name('index');
         Route::get('/{id}', [NilaiKriteriaController::class, 'hasilSawDetail'])->name('show');
-        Route::get('/export/{tahun}', [NilaiKriteriaController::class, 'exportHasilSaw'])->name('export');
+        Route::get('/export/hasil-saw-pdf/{tahun}', [NilaiKriteriaController::class, 'exportHasilSaw'])->name('exports-hasil-saw-pdf');
     });
 });
 

@@ -791,4 +791,43 @@ class NilaiKriteriaController extends Controller
 
         return response()->json(['ids' => $ids]);
     }
+/**
+ * Export hasil SAW ke PDF
+ */
+public function exportHasilSaw($tahun)
+{
+    $hasil = HasilSaw::with(['jalan'])
+        ->where('tahun_perhitungan', $tahun)
+        ->orderBy('peringkat', 'asc')
+        ->get();
+    
+    if ($hasil->isEmpty()) {
+        return redirect()->back()->with('error', 'Tidak ada data hasil SAW untuk tahun ' . $tahun);
+    }
+    
+    // Statistik
+    $statistik = [
+        'total_jalan' => $hasil->count(),
+        'skor_tertinggi' => $hasil->max('skor_akhir'),
+        'skor_terendah' => $hasil->min('skor_akhir'),
+        'rata_rata' => $hasil->avg('skor_akhir'),
+        'tahun' => $tahun,
+        'tanggal_cetak' => now('Asia/Jakarta')->translatedFormat('d F Y H:i:s'),
+        'user_name' => Auth::user()->name,
+        'user_nip' => Auth::user()->nip ?? '.........................'
+    ];
+    
+    // Data per kategori prioritas
+    $prioritasUtama = $hasil->where('peringkat', 1)->first();
+    $top3 = $hasil->where('peringkat', '<=', 3);
+    $top5 = $hasil->where('peringkat', '<=', 5);
+    
+    $title = 'LAPORAN HASIL PERHITUNGAN SAW';
+    $subtitle = 'Prioritas Perbaikan Jalan Tahun ' . $tahun;
+    
+    $pdf = Pdf::loadView('exports.hasil-saw-pdf', compact('hasil', 'statistik', 'title', 'subtitle', 'prioritasUtama', 'top3', 'top5'));
+    $pdf->setPaper('A4', 'landscape');
+    
+    return $pdf->download('Laporan_Hasil_SAW_Tahun_' . $tahun . '_' . date('Ymd_His') . '.pdf');
+}
 }
