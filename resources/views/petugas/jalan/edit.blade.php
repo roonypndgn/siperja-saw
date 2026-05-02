@@ -233,7 +233,7 @@
                 
                 <!-- Info Tambahan -->
                 <div style="margin-top: 15px; padding: 12px; background: #E8EDF2; border-radius: 8px; font-size: 12px; color: #6B7280;">
-                    <i class="fas fa-history"></i> Terakhir diperbarui: {{ $jalan->updated_at->translatedFormat('d F Y H:i') }}
+                    <i class="fas fa-history"></i> Terakhir diperbarui: {{ $jalan->updated_at->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i') }}
                 </div>
             </div>
         </div>

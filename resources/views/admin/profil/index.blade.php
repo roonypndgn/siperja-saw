@@ -77,7 +77,7 @@
                     <div class="info-label" style="width: 30%; font-weight: 600; color: #4B6B8A;">
                         <i class="fas fa-clock" style="width: 24px; color: #F9A826;"></i> Terakhir Update
                     </div>
-                    <div class="info-value" style="flex: 1;">: {{ $user->updated_at->translatedFormat('d F Y H:i') }}</div>
+                    <div class="info-value" style="flex: 1;">: {{ $user->updated_at->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i') }}</div>
                 </div>
             </div>
             

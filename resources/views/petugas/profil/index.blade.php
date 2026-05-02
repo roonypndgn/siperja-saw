@@ -126,13 +126,13 @@
                     <div class="info-label">
                         <i class="fas fa-calendar-plus"></i> Terdaftar Sejak
                     </div>
-                    <div class="info-value">{{ $user->created_at->translatedFormat('d F Y, H:i:s') }}</div>
+                    <div class="info-value">{{ $user->created_at->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i:s') }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">
                         <i class="fas fa-clock"></i> Terakhir Update
                     </div>
-                    <div class="info-value">{{ $user->updated_at->translatedFormat('d F Y, H:i:s') }}</div>
+                    <div class="info-value">{{ $user->updated_at->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i:s') }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">

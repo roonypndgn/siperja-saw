@@ -142,7 +142,7 @@
                                 <i class="fas fa-calendar-plus"></i> Dibuat
                             </td>
                             <td class="info-value">
-                                {{ $kriteria->created_at->translatedFormat('d F Y H:i:s') }}
+                                {{ $kriteria->created_at->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
                             </td>
                         </tr>
                         <tr>
@@ -150,7 +150,7 @@
                                 <i class="fas fa-calendar-edit"></i> Terakhir Update
                             </td>
                             <td class="info-value">
-                                {{ $kriteria->updated_at->translatedFormat('d F Y H:i:s') }}
+                                {{ $kriteria->updated_at->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
                             </td>
                         </tr>
                     </table>

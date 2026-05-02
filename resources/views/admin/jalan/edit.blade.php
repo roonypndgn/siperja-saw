@@ -203,9 +203,9 @@
                 <div class="info-card-content">
                     <div class="info-card-title">Informasi Sistem</div>
                     <div class="info-card-text">
-                        <div>Dibuat oleh: <strong>{{ $jalan->createdBy->name ?? '-' }}</strong> pada {{ $jalan->created_at->format('d/m/Y H:i') }}</div>
+                        <div>Dibuat oleh: <strong>{{ $jalan->createdBy->name ?? '-' }}</strong> pada {{ $jalan->created_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</div>
                         @if($jalan->updated_by)
-                        <div>Terakhir diubah oleh: <strong>{{ $jalan->updatedBy->name ?? '-' }}</strong> pada {{ $jalan->updated_at->format('d/m/Y H:i') }}</div>
+                        <div>Terakhir diubah oleh: <strong>{{ $jalan->updatedBy->name ?? '-' }}</strong> pada {{ $jalan->updated_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</div>
                         @endif
                     </div>
                 </div>

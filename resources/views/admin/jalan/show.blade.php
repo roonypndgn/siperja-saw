@@ -152,7 +152,7 @@
                     </div>
                     <div class="info-value">
                         {{ $jalan->createdBy->name ?? '-' }}
-                        <span class="info-date">{{ $jalan->created_at->format('d/m/Y H:i') }}</span>
+                        <span class="info-date">{{ $jalan->created_at->timezone('Asia/Jakarta')->translatedFormat('d/m/Y H:i') }}</span>
                     </div>
                 </div>
                 @if($jalan->updated_by)
@@ -162,7 +162,7 @@
                     </div>
                     <div class="info-value">
                         {{ $jalan->updatedBy->name ?? '-' }}
-                        <span class="info-date">{{ $jalan->updated_at->format('d/m/Y H:i') }}</span>
+                        <span class="info-date">{{ $jalan->updated_at->timezone('Asia/Jakarta')->translatedFormat('d/m/Y H:i') }}</span>
                     </div>
                 </div>
                 @endif
@@ -263,7 +263,7 @@
                 </div>
                 <div class="saw-date">
                     <div class="date-label">Tanggal Perhitungan</div>
-                    <div class="date-value">{{ \Carbon\Carbon::parse($hasilSaw->tanggal_perhitungan)->format('d/m/Y H:i') }}</div>
+                    <div class="date-value">{{ \Carbon\Carbon::parse($hasilSaw->tanggal_perhitungan)->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</div>
                 </div>
                 <div class="saw-user">
                     <div class="user-label">Dihitung Oleh</div>

@@ -89,7 +89,7 @@
                         @if($item->validated_by)
                             <small>{{ $item->validatedBy->name ?? '-' }}</small>
                             <br>
-                            <small style="color: #6B7280; font-size: 10px;">{{ $item->validated_at ? $item->validated_at->format('d/m/Y') : '-' }}</small>
+                            <small style="color: #6B7280; font-size: 10px;">{{ $item->validated_at ? $item->validated_at->timezone('Asia/Jakarta')->format('d/m/Y') : '-' }}</small>
                         @else
                             <span style="color: #9CA3AF;">-</span>
                         @endif

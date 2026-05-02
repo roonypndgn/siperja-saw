@@ -94,7 +94,7 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
             <div>
                 <div style="font-size: 12px; color: #6B7280;">Tanggal Perhitungan</div>
-                <div style="font-weight: 600;">{{ $hasil->tanggal_perhitungan->translatedFormat('d F Y H:i:s') }}</div>
+                <div style="font-weight: 600;">{{ $hasil->tanggal_perhitungan->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
             </div>
             <div>
                 <div style="font-size: 12px; color: #6B7280;">Dihitung Oleh</div>

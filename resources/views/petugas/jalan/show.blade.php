@@ -101,7 +101,7 @@
                                 <i class="fas fa-calendar-plus" style="width: 20px; color: #F9A826;"></i> Tanggal Dibuat
                             </td>
                             <td style="padding: 12px 8px;">
-                                {{ $jalan->created_at->translatedFormat('d F Y H:i:s') }}
+                                {{ $jalan->created_at->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
                             </td>
                         </tr>
                         @if($jalan->updated_by)
@@ -110,7 +110,7 @@
                                 <i class="fas fa-user-edit" style="width: 20px; color: #F9A826;"></i> Terakhir Diubah
                             </td>
                             <td style="padding: 12px 8px;">
-                                {{ $jalan->updatedBy->name ?? '-' }} - {{ $jalan->updated_at->translatedFormat('d F Y H:i:s') }}
+                                {{ $jalan->updatedBy->name ?? '-' }} - {{ $jalan->updated_at->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
                             </td>
                         </tr>
                         @endif

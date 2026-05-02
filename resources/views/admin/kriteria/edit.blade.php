@@ -233,7 +233,7 @@
                     <!-- Informasi Tambahan -->
                     <div style="margin-top: 16px; padding: 12px; background: #F8FAFC; border-radius: 8px; font-size: 12px; color: var(--text-light);">
                         <i class="fas fa-history"></i> 
-                        Terakhir diperbarui: {{ $kriteria->updated_at->translatedFormat('d F Y H:i:s') }}
+                        Terakhir diperbarui: {{ $kriteria->updated_at->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
                         <br>
                         <i class="fas fa-chart-line"></i> 
                         Total penggunaan: {{ $kriteria->nilaiKriteriaJalan()->count() }} kali penilaian
