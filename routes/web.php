@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\KriteriaController;
 use App\Http\Controllers\Petugas\NilaiKController;
 use App\Http\Controllers\Petugas\PanduanController;
 use App\Http\Controllers\Petugas\ProfilController;
+use App\Http\Controllers\Admin\ProfilAController;
 use App\Http\Controllers\Admin\NilaiKriteriaController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\AuthController;
@@ -88,12 +89,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/export/hasil-saw-pdf/{tahun}', [NilaiKriteriaController::class, 'exportHasilSaw'])->name('exports-hasil-saw-pdf');
     });
     Route::prefix('profil')->name('profil.')->group(function () {
-        Route::get('/', [ProfilController::class, 'index'])->name('index');
-        Route::get('/edit', [ProfilController::class, 'edit'])->name('edit');
-        Route::put('/update', [ProfilController::class, 'update'])->name('update');
-        Route::get('/change-password', [ProfilController::class, 'changePasswordForm'])->name('change-password');
-        Route::post('/update-password', [ProfilController::class, 'updatePassword'])->name('update-password');
-        Route::delete('/remove-foto', [ProfilController::class, 'removeFoto'])->name('remove-foto');
+        Route::get('/', [ProfilAController::class, 'index'])->name('index');
+        Route::get('/edit', [ProfilAController::class, 'edit'])->name('edit');
+        Route::put('/update', [ProfilAController::class, 'update'])->name('update');
+        Route::get('/change-password', [ProfilAController::class, 'changePasswordForm'])->name('change-password');
+        Route::post('/update-password', [ProfilAController::class, 'updatePassword'])->name('update-password');
+        Route::delete('/remove-foto', [ProfilAController::class, 'removeFoto'])->name('remove-foto');
     });
 });
 

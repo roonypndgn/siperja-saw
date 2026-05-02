@@ -16,41 +16,47 @@
                 <div class="brand-name">SIPERJA</div>
                 <div class="brand-tagline">Sistem Prioritas Perbaikan Jalan</div>
                 <div style="font-size: 8px; color: var(--secondary); margin-top: 4px; letter-spacing: 0.5px;">
-                    <i class="fas fa-hand-peace"></i> SIGAP MEMBANGUN NEGERI
+                     SIGAP MEMBANGUN NEGERI
                 </div>
             </div>
         </a>
     </div>
 
+<a href="{{ route('admin.profil.index') }}" class="user-card-link" style="text-decoration: none; display: block;">
     <div class="user-card">
         <div class="user-avatar">
             @if(Auth::user()->foto)
-            <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto" class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover;">
+                <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto" class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover;">
             @else
-            <div class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%); display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-weight: 700; font-size: 18px;">
-                {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
-            </div>
+                <div class="avatar-img" style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%); display: flex; align-items: center; justify-content: center; color: var(--primary-dark); font-weight: 700; font-size: 18px;">
+                    {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                </div>
             @endif
             <div class="user-details">
                 <div class="user-name">{{ Auth::user()->name ?? 'Administrator' }}</div>
                 <div class="user-role">
-                    <i class="" style="font-size: 10px;"></i>
+                    <i class="fas fa-shield-alt" style="font-size: 10px; margin-right: 4px;"></i>
                     @if(Auth::user()->role == 'admin')
-                    Administrator
+                        Administrator
                     @elseif(Auth::user()->role == 'petugas')
-                    Petugas Lapangan
+                        Petugas Lapangan
                     @else
-                    {{ ucfirst(Auth::user()->role ?? 'Admin') }}
+                        {{ ucfirst(Auth::user()->role ?? 'Admin') }}
                     @endif
                 </div>
                 @if(Auth::user()->nip)
-                <div class="user-nip" style="font-size: 10px; color: #fffff; margin-top: 2px;">
-                    NIP: {{ Auth::user()->nip }}
-                </div>
+                    <div class="user-nip" style="font-size: 10px; color: #8BA3BC; margin-top: 2px;">
+                        <i class="fas fa-id-card" style="font-size: 9px; margin-right: 3px;"></i>
+                        NIP: {{ Auth::user()->nip }}
+                    </div>
                 @endif
+            </div>
+            <div class="user-arrow" style="margin-left: auto; color: #8BA3BC;">
+                <i class="fas fa-chevron-right" style="font-size: 12px;"></i>
             </div>
         </div>
     </div>
+</a>
 
     <div class="sidebar-nav">
         <!-- Menu Utama -->
@@ -117,25 +123,6 @@
                         @if($totalRanking > 0)
                         <span class="nav-badge">{{ $totalRanking }}</span>
                         @endif
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Laporan -->
-        <div class="nav-group">
-            <div class="nav-label">LAPORAN</div>
-            <ul class="nav-items">
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <div class="nav-icon"><i class="fas fa-file-alt"></i></div>
-                        <div class="nav-text">Laporan</div>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <div class="nav-icon"><i class="fas fa-download"></i></div>
-                        <div class="nav-text">Ekspor Data</div>
                     </a>
                 </li>
             </ul>

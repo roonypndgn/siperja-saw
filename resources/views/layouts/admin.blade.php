@@ -127,7 +127,50 @@
         .sidebar.collapsed .brand-text {
             display: none;
         }
-        
+    .user-card-link {
+        transition: all 0.3s ease;
+        border-radius: 16px;
+        margin: 8px 12px;
+    }
+    
+    .user-card-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .user-card-link:hover .user-arrow i {
+        transform: translateX(3px);
+        color: var(--secondary);
+    }
+    
+    .user-arrow i {
+        transition: transform 0.3s ease;
+    }
+    
+    .user-card {
+        padding: 12px;
+    }
+    
+    .user-avatar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .user-details {
+        flex: 1;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        color: white;
+        font-size: 14px;
+    }
+    
+    .user-role {
+        font-size: 11px;
+        color: var(--secondary);
+        margin-top: 2px;
+    }
         .brand-name {
             font-size: 20px;
             font-weight: 800;
