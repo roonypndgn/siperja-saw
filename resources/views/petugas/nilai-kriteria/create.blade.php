@@ -221,11 +221,68 @@
             <a href="{{ route('petugas.nilai-kriteria.riwayat') }}" class="btn-outline">
                 <i class="fas fa-arrow-left"></i> Batal
             </a>
-            <button type="submit" class="btn-primary" id="submitBtn">
+            <button type="button" id="submitBtn" class="btn-primary">
                 <i class="fas fa-save"></i> Simpan Nilai
             </button>
         </div>
     </form>
+</div>
+
+<!-- Modal Konfirmasi -->
+<div id="confirmModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 20px; max-width: 500px; width: 90%; margin: 20px; overflow: hidden;">
+        <!-- Header Modal -->
+        <div style="padding: 24px 24px 16px; border-bottom: 1px solid #E2E8F0;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; background: #FEF3E0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-question-circle" style="font-size: 20px; color: #F9A826;"></i>
+                </div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1A2A3A;">Konfirmasi Simpan Data</h3>
+            </div>
+        </div>
+        
+        <!-- Body Modal -->
+        <div style="padding: 24px;">
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 12px; color: #4B5563; font-size: 14px; line-height: 1.6;">
+                    Apakah Anda yakin dengan data yang akan disimpan?
+                </p>
+                
+                <!-- Informasi Data Ringkasan -->
+                <div style="background: #F8FAFC; border-radius: 12px; padding: 16px; margin-top: 16px;">
+                    <p style="margin: 0 0 12px; font-weight: 600; color: #1A2A3A; font-size: 13px;">
+                        <i class="fas fa-info-circle" style="color: #F9A826; margin-right: 6px;"></i>
+                        Ringkasan Data
+                    </p>
+                    <div id="modalSummary" style="font-size: 13px;">
+                        <!-- Akan diisi dengan JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Peringatan Validasi -->
+                <div style="background: #FEF3E0; border-left: 3px solid #F9A826; padding: 12px; border-radius: 8px; margin-top: 16px;">
+                    <div style="display: flex; gap: 10px;">
+                        <i class="fas fa-clock" style="color: #F9A826; font-size: 16px;"></i>
+                        <div style="font-size: 12px; color: #92400E;">
+                            <strong style="display: block; margin-bottom: 4px;">Antrian Validasi Admin</strong>
+                            Data akan masuk ke antrian validasi admin sebelum digunakan dalam perhitungan SAW.
+                            Pastikan data yang diinput sudah benar.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Modal -->
+        <div style="padding: 16px 24px; background: #F8FAFC; border-top: 1px solid #E2E8F0; display: flex; justify-content: flex-end; gap: 12px;">
+            <button type="button" id="cancelModalBtn" style="background: transparent; border: 1px solid #E2E8F0; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 500; font-size: 14px; color: #6B7280;">
+                <i class="fas fa-times"></i> Batal
+            </button>
+            <button type="button" id="confirmModalBtn" style="background: #F9A826; border: none; padding: 10px 24px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; color: #1A2A3A;">
+                <i class="fas fa-save"></i> Ya, Simpan Data
+            </button>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -508,6 +565,35 @@
         font-size: 11px;
     }
     
+    /* Modal Animation */
+    .modal {
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .modal > div {
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateY(-30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    /* Disable body scroll when modal open */
+    body.modal-open {
+        overflow: hidden;
+    }
+    
     /* Select option disabled style */
     select option:disabled {
         background-color: #F8FAFC;
@@ -540,11 +626,111 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('formNilai');
     const submitBtn = document.getElementById('submitBtn');
     
+    // Modal Elements
+    const confirmModal = document.getElementById('confirmModal');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const confirmModalBtn = document.getElementById('confirmModalBtn');
+    const modalSummary = document.getElementById('modalSummary');
+    
     // Nilai inputs
     const nilaiInputs = document.querySelectorAll('.nilai-input');
     const progressFill = document.getElementById('progressFill');
     const progressPercent = document.getElementById('progressPercent');
     const progressInfo = document.getElementById('progressInfo');
+    
+    let pendingSubmit = false;
+    
+    // Function to show modal
+    function showModal(modalData) {
+        if (confirmModal && modalSummary) {
+            // Update summary data
+            modalSummary.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #6B7280;">Jalan:</span>
+                    <strong style="color: #1A2A3A;">${modalData.jalan}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #6B7280;">Tahun Penilaian:</span>
+                    <strong style="color: #1A2A3A;">${modalData.tahun}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #6B7280;">Jumlah Kriteria:</span>
+                    <strong style="color: #1A2A3A;">${modalData.jumlahKriteria} kriteria</strong>
+                </div>
+            `;
+            
+            confirmModal.style.display = 'flex';
+            document.body.classList.add('modal-open');
+        }
+    }
+    
+    // Function to hide modal
+    function hideModal() {
+        if (confirmModal) {
+            confirmModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+    }
+    
+    // Function to show error alert
+    function showErrorAlert(message, focusElement = null) {
+        const alertDiv = document.createElement('div');
+        alertDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #FEE2E2;
+            border-left: 4px solid #EF4444;
+            color: #991B1B;
+            padding: 12px 20px;
+            border-radius: 10px;
+            z-index: 10000;
+            font-size: 14px;
+            max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease;
+        `;
+        alertDiv.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 10px;"></i> ${message.replace(/\n/g, '<br>')}`;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.style.opacity = '0';
+            alertDiv.style.transition = 'opacity 0.3s';
+            setTimeout(() => alertDiv.remove(), 300);
+        }, 4000);
+        
+        if (focusElement) {
+            focusElement.focus();
+        }
+    }
+    
+    // Function to show success alert
+    function showSuccessAlert(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #D1FAE5;
+            border-left: 4px solid #10B981;
+            color: #065F46;
+            padding: 12px 20px;
+            border-radius: 10px;
+            z-index: 10000;
+            font-size: 14px;
+            max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease;
+        `;
+        alertDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 10px;"></i> ${message}`;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.style.opacity = '0';
+            alertDiv.style.transition = 'opacity 0.3s';
+            setTimeout(() => alertDiv.remove(), 300);
+        }, 3000);
+    }
     
     // Update progress bar
     function updateProgress() {
@@ -721,7 +907,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const selectedOption = this.options[this.selectedIndex];
             if (selectedOption.disabled) {
                 this.value = '';
-                alert('Jalan ini sudah memiliki data yang tervalidasi lengkap dan tidak dapat dipilih.');
+                showErrorAlert('Jalan ini sudah memiliki data yang tervalidasi lengkap dan tidak dapat dipilih.');
                 return;
             }
             
@@ -757,40 +943,106 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Validate before submit
-    form.addEventListener('submit', function(e) {
-        const jalanId = jalanSelect.value;
-        let allFilled = true;
-        let emptyFields = [];
-        
-        // Only check non-disabled inputs
-        nilaiInputs.forEach((input, index) => {
-            if (!input.disabled) {
-                const kriteriaName = input.closest('tr')?.querySelector('td:nth-child(2) strong')?.innerText || 'Kriteria';
+    // Modal event handlers
+    if (cancelModalBtn) {
+        cancelModalBtn.addEventListener('click', hideModal);
+    }
+    
+    if (confirmModalBtn) {
+        confirmModalBtn.addEventListener('click', function() {
+            hideModal();
+            if (pendingSubmit) {
+                // Disable submit button to prevent double submission
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+                
+                // Submit the form
+                form.submit();
+            }
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (confirmModal) {
+        confirmModal.addEventListener('click', function(e) {
+            if (e.target === confirmModal) {
+                hideModal();
+            }
+        });
+    }
+    
+    // Escape key to close modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && confirmModal && confirmModal.style.display === 'flex') {
+            hideModal();
+        }
+    });
+    
+    // Submit button click handler (not form submit)
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const jalanId = jalanSelect?.value;
+            const selectedJalanText = jalanSelect?.options[jalanSelect.selectedIndex]?.text || '';
+            const tahun = tahunSelect?.value;
+            
+            let allFilled = true;
+            let emptyFields = [];
+            
+            // Only check non-disabled inputs
+            const activeInputs = Array.from(document.querySelectorAll('.nilai-input')).filter(input => !input.disabled);
+            
+            activeInputs.forEach((input) => {
+                const kriteriaRow = input.closest('tr');
+                const kriteriaName = kriteriaRow?.querySelector('td:nth-child(2) strong')?.innerText || 'Kriteria';
                 if (!input.value || input.value.trim() === '') {
                     allFilled = false;
                     emptyFields.push(kriteriaName);
                 }
+            });
+            
+            if (!jalanId) {
+                showErrorAlert('Silakan pilih jalan terlebih dahulu', jalanSelect);
+                return;
             }
+            
+            if (!allFilled) {
+                showErrorAlert(`Harap isi semua nilai kriteria!\n\nKriteria yang belum diisi:\n- ${emptyFields.join('\n- ')}`);
+                return;
+            }
+            
+            // Check if form is not already submitting
+            if (form.getAttribute('data-submitting') === 'true') {
+                return;
+            }
+            
+            // Show modal with summary data
+            pendingSubmit = true;
+            showModal({
+                jalan: selectedJalanText,
+                tahun: tahun,
+                jumlahKriteria: activeInputs.length
+            });
         });
-        
-        if (!jalanId) {
-            e.preventDefault();
-            alert('Silakan pilih jalan terlebih dahulu');
-            jalanSelect.focus();
-            return;
-        }
-        
-        if (!allFilled) {
-            e.preventDefault();
-            alert(`Harap isi semua nilai kriteria!\n\nKriteria yang belum diisi:\n- ${emptyFields.join('\n- ')}`);
-            return;
-        }
-        
-        if (!confirm('Apakah Anda yakin dengan data yang diinput? Data akan disimpan dan masuk ke antrian validasi admin.')) {
-            e.preventDefault();
-        }
-    });
+    }
+    
+    // Handle form submit success/error messages from session
+    @if(session('success'))
+        showSuccessAlert("{{ session('success') }}");
+    @endif
+    
+    @if(session('error'))
+        showErrorAlert("{{ session('error') }}");
+    @endif
+    
+    @if($errors->any())
+        let errorMsg = "Terjadi kesalahan:\n";
+        @foreach($errors->all() as $error)
+            errorMsg += "- {{ $error }}\n";
+        @endforeach
+        showErrorAlert(errorMsg);
+    @endif
     
     // Initialize
     updateProgress();

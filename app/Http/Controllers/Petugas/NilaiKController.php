@@ -31,7 +31,6 @@ class NilaiKController extends Controller
         $jalan = Jalan::where('is_active', true)->orderBy('nama')->get();
         $kriteria = Kriteria::where('is_active', true)->orderBy('urutan')->get();
 
-        // Jika ada jalan_id yang dipilih, ambil nilai yang sudah ada (hanya milik petugas ini)
         $existingValues = [];
         if ($jalanId) {
             $existingValues = NilaiKriteriaJalan::where('jalan_id', $jalanId)
@@ -109,7 +108,6 @@ class NilaiKController extends Controller
 
             DB::commit();
 
-            // Redirect ke RIWAYAT setelah sukses
             return redirect()->route('petugas.nilai-kriteria.riwayat', ['tahun' => $tahun])
                 ->with('success', 'Data nilai kriteria berhasil disimpan! Menunggu validasi admin.');
 
